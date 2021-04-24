@@ -5,7 +5,7 @@ from os.path import isdir, join, abspath
 from random import shuffle
 
 from unidiff import PatchSet
-from dataset import Dataset
+from Dataset.dataset import Dataset
 from Utils.tools import *
 from Utils.logs import *
 from Utils.config import *
@@ -13,7 +13,7 @@ from Utils.config import *
 
 class NvdDataset(Dataset):
     def __init__(self):
-        super(NvdDataset, self).__init__(config.get_str('NVD', 'NvdPickle'))
+        super(NvdDataset, self).__init__(get_str('NVD', 'NvdPickle'))
 
     @staticmethod
     def get_vulnerable_lines(dir):
@@ -94,16 +94,16 @@ class NvdDataset(Dataset):
                 'flaw_dict': flaw_dict}
 
     def create_sets(self):
-        source_dir = config.get_str('NVD', 'SourceDirectory')
-        nvd_pickle = config.get_str('NVD', 'NvdPickle')
-        languages = config.get_list('dataset', 'Languages')
-        vulnerabilities = config.get_list('dataset', 'Vulnerabilities')
+        source_dir = get_str('NVD', 'SourceDirectory')
+        nvd_pickle = get_str('NVD', 'NvdPickle')
+        languages = get_list('dataset', 'Languages')
+        vulnerabilities = get_list('dataset', 'Vulnerabilities')
 
         if not os.path.isfile(nvd_pickle):
 
             dataset = self.create_list(source_dir, languages, vulnerabilities,
-                                       config.get_int('dataset', 'TrainingPercentage'),
-                                       config.get_int('dataset', 'TuningPercentage'))
+                                       get_int('dataset', 'TrainingPercentage'),
+                                       get_int('dataset', 'TuningPercentage'))
 
             # Save to pickle file for future use
             with open(nvd_pickle, 'wb') as pickle_file:

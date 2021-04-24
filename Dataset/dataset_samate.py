@@ -12,11 +12,11 @@ from Utils.tools import slice_perc
 
 class SamateDataset(Dataset):
     def __init__(self):
-        super(SamateDataset, self).__init__(config.get_str('SAMATE', 'SamatePickle'))
+        super(SamateDataset, self).__init__(get_str('SAMATE', 'SamatePickle'))
 
     @staticmethod
     def get_file_list(vuln_type):
-        flaw_dir = config.get_str('SAMATE', 'SamateDirectory')
+        flaw_dir = get_str('SAMATE', 'SamateDirectory')
         flaw_dict = {}
 
         if vuln_type == 'XSS':
@@ -49,18 +49,18 @@ class SamateDataset(Dataset):
 
     def create_sets(self):
         language = 'PHP'  # TODO: What are we going to do with Python?
-        samate_pickle = config.get_str('SAMATE', 'SamatePickle')
+        samate_pickle = get_str('SAMATE', 'SamatePickle')
 
         if not os.path.isfile(samate_pickle):
-            training_perc = config.get_int('dataset', 'TrainingPercentage')
-            tuning_perc = config.get_int('dataset', 'TuningPercentage')
+            training_perc = get_int('dataset', 'TrainingPercentage')
+            tuning_perc = get_int('dataset', 'TuningPercentage')
 
             training_set = {language: {}}
             tuning_set = {language: {}}
             testing_set = {language: {}}
             flaw_dict = {language: {}}
 
-            for vuln_type in config.get_list('dataset', 'Vulnerabilities'):
+            for vuln_type in get_list('dataset', 'Vulnerabilities'):
                 flaws, lst = self.get_file_list(vuln_type)
 
                 flaw_dict[language][vuln_type] = flaws

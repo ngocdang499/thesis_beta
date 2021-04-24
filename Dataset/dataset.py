@@ -9,8 +9,8 @@ class Dataset:
     def __init__(self, pickle_path):
         self.pickle_path = pickle_path
         self.sampling_perc = dict()
-        self.sampling_perc['SQLi'] = config.get_float('dataset', 'SamplingPercentageSQLi')
-        self.sampling_perc['XSS'] = config.get_float('dataset', 'SamplingPercentageXSS')
+        self.sampling_perc['SQLi'] = get_float('dataset', 'SamplingPercentageSQLi')
+        self.sampling_perc['XSS'] = get_float('dataset', 'SamplingPercentageXSS')
 
     def create_sets(self):
         pass

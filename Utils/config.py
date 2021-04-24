@@ -1,7 +1,7 @@
 import configparser
 import ast
 
-from wirecaml.tools.ascii import print_error
+from Utils.logs import print_error
 
 config = None
 
