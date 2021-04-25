@@ -1,0 +1,15 @@
+version: '3.7'
+
+services:
+  postgres:
+      image: bitnami/postgresql:12
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+      environment:
+        POSTGRESQL_DATABASE: CPG
+        POSTGRESQL_USERNAME: cpg_ml
+        POSTGRESQL_PASSWORD: codepropertygraph
+      ports:
+        - 127.0.0.1:5432:5432
+volumes:
+  pgdata:
