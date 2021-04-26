@@ -1,0 +1,3 @@
+[submodule "MiningCPG/gSpan"]
+	path = MiningCPG/gSpan
+	url = git@github.com:ngocdang499/gSpan.git

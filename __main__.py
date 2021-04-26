@@ -1,7 +1,7 @@
 from Utils.logs import *
 from Utils.config import *
 from Dataset.dataset_factory import *
-from CodePropertyGraph.cpg import *
+from .cpg import *
 
 
 def cmd_create_set():
