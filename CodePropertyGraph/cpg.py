@@ -21,20 +21,21 @@ class CPG(Base):
 
     @staticmethod
     def generate_CPG(file_path, vuln_lines=[]):
-        os.system('./../tools/phpjoern/php2ast -f neo4j %s' % file_path)
-        os.system('./../tools/joern/phpast2cpg nodes.csv rels.csv')
+        os.system('./tools/phpjoern/php2ast -f neo4j %s' % file_path)
+        os.system('./tools/joern/phpast2cpg ./nodes.csv ./rels.csv')
 
         cpg = CPG(file_path, vuln_lines)
         session = session_factory()
         session.add(cpg)
         session.commit()
         # Add nodes to db
-        node_lst = Node.getNodesFromCSV('CodePropertyGraph/nodes.csv', cpg.id, vuln_lines)
+        print_notice(f'Adding nodes and edges from CPG no.{cpg.id} to database...')
+        node_lst = Node.getNodesFromCSV('./nodes.csv', cpg.id, vuln_lines)
         Node.addNodes(node_lst)
 
         # Add edges to db
-        edge_lst = Edge.getEdgesFromCSV('CodePropertyGraph/rels.csv', cpg.id)
-        edge_lst += Edge.getEdgesFromCSV('CodePropertyGraph/cpg_edges.csv', cpg.id)
+        edge_lst = Edge.getEdgesFromCSV('./rels.csv', cpg.id)
+        edge_lst += Edge.getEdgesFromCSV('./cpg_edges.csv', cpg.id)
         Edge.addEdges(edge_lst)
         session.close()
         return cpg
@@ -57,7 +58,6 @@ class Edge(Base):
 
     @staticmethod
     def getEdgesFromCSV(filepath, cpg_id):
-        print_notice(f'Adding edges of CPG no.{cpg_id} from CSV file {filepath} to database...')
         edge_lst = []
         with open(filepath) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
@@ -66,8 +66,6 @@ class Edge(Base):
                 if line_count == 0:
                     line_count += 1
                 else:
-                    # start:START_ID,end:END_ID,type:TYPE
-                    print(row, "\n")
                     edge = Edge(row[0], row[1], row[2], cpg_id)
                     edge_lst.append(edge)
                     line_count += 1
@@ -105,7 +103,6 @@ class Node(Base):
 
     @staticmethod
     def getNodesFromCSV(filepath, cpg_id, vuln_lines):
-        print_notice(f'Adding nodes of CPG no.{cpg_id} from CSV file {filepath} to database...')
         node_lst = []
         with open(filepath) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
@@ -117,7 +114,8 @@ class Node(Base):
                     labels = Labels(row[1], row[2], row[3], row[4], row[5], row[6],
                                     row[7], row[8], row[9], row[10], row[11], row[12])
                     is_vuln = False
-                    if labels.lineno in vuln_lines:
+
+                    if labels.lineno and labels.lineno in vuln_lines:
                         is_vuln = True
                     node = Node(row[0], cpg_id, labels, is_vuln)
                     node_lst.append(node)
@@ -158,7 +156,7 @@ class Labels(dict):
         dict.__init__(self, labels=labels,
                       type=type,
                       flags=flags,
-                      lineno=lineno,
+                      lineno=int(lineno) if lineno else None,
                       code=code,
                       childnum=childnum,
                       funcid=funcid,
@@ -170,7 +168,7 @@ class Labels(dict):
         self.labels = labels
         self.type = type
         self.flags = flags
-        self.lineno = lineno
+        self.lineno = int(lineno) if lineno else None
         self.code = code
         self.childnum = childnum
         self.funcid = funcid
