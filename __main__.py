@@ -1,7 +1,7 @@
 from Utils.logs import *
 from Utils.config import *
 from Dataset.dataset_factory import *
-from .cpg import *
+from CodePropertyGraph.cpg import *
 
 
 def cmd_create_set():
@@ -17,7 +17,7 @@ def cmd_create_set():
 def cmd_create_CPG(set_type, language, vuln_type):
     for filepath in sets[set_type][language][vuln_type]:
         if len(sets['flaw_dict'][language][vuln_type][filepath]) > 0:
-            CPG.generate_CPG(filepath, sets['flaw_dict'][language][vuln_type][filepath])
+            CSVGraph.generate_CPG(filepath, sets['flaw_dict'][language][vuln_type][filepath])
 
 
 def main():

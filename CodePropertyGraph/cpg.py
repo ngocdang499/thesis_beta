@@ -8,7 +8,11 @@ from sqlalchemy import Column, Boolean, Integer, String, JSON
 from CodePropertyGraph.db import Base, session_factory
 
 
-class CPG(Base):
+class CSVGraph(Base):
+    """ CSV graph class.
+        This is the gorm class to handle cpg graph generated in csv file by phpjoern.
+        Graph info will be store in table cpg.
+    """
     __tablename__ = 'cpg'
 
     id = Column(Integer, primary_key=True)
@@ -24,24 +28,29 @@ class CPG(Base):
         os.system('./tools/phpjoern/php2ast -f neo4j %s' % file_path)
         os.system('./tools/joern/phpast2cpg ./nodes.csv ./rels.csv')
 
-        cpg = CPG(file_path, vuln_lines)
+        cpg = CSVGraph(file_path, vuln_lines)
         session = session_factory()
         session.add(cpg)
         session.commit()
+
         # Add nodes to db
         print_notice(f'Adding nodes and edges from CPG no.{cpg.id} to database...')
-        node_lst = Node.getNodesFromCSV('./nodes.csv', cpg.id, vuln_lines)
-        Node.addNodes(node_lst)
+        node_lst = CSVNode.getNodesFromCSV('./nodes.csv', cpg.id, vuln_lines)
+        CSVNode.addNodes(node_lst)
 
         # Add edges to db
-        edge_lst = Edge.getEdgesFromCSV('./rels.csv', cpg.id)
-        edge_lst += Edge.getEdgesFromCSV('./cpg_edges.csv', cpg.id)
-        Edge.addEdges(edge_lst)
+        edge_lst = CSVEdge.getEdgesFromCSV('./rels.csv', cpg.id)
+        edge_lst += CSVEdge.getEdgesFromCSV('./cpg_edges.csv', cpg.id)
+        CSVEdge.addEdges(edge_lst)
         session.close()
         return cpg
 
 
-class Edge(Base):
+class CSVEdge(Base):
+    """ CSV Edge class.
+        This is the gorm class to handle cpg edge generated in csv file by phpjoern.
+        Edge info will be store in table edge.
+    """
     __tablename__ = 'edge'
 
     id = Column(Integer, primary_key=True)
@@ -66,7 +75,7 @@ class Edge(Base):
                 if line_count == 0:
                     line_count += 1
                 else:
-                    edge = Edge(row[0], row[1], row[2], cpg_id)
+                    edge = CSVEdge(row[0], row[1], row[2], cpg_id)
                     edge_lst.append(edge)
                     line_count += 1
         return edge_lst
@@ -81,12 +90,12 @@ class Edge(Base):
     @staticmethod
     def getEdges(cpg_id):
         session = session_factory()
-        edge_lst = session.query(Edge).where(Edge.cpg_id == cpg_id)
+        edge_lst = session.query(CSVEdge).where(CSVEdge.cpg_id == cpg_id)
         session.close()
         return edge_lst
 
 
-class Node(Base):
+class CSVNode(Base):
     __tablename__ = 'node'
 
     id = Column(Integer, primary_key=True)
@@ -111,13 +120,13 @@ class Node(Base):
                 if line_count == 0:
                     line_count += 1
                 else:
-                    labels = Labels(row[1], row[2], row[3], row[4], row[5], row[6],
+                    labels = CSVNodeLabels(row[1], row[2], row[3], row[4], row[5], row[6],
                                     row[7], row[8], row[9], row[10], row[11], row[12])
                     is_vuln = False
 
                     if labels.lineno and labels.lineno in vuln_lines:
                         is_vuln = True
-                    node = Node(row[0], cpg_id, labels, is_vuln)
+                    node = CSVNode(row[0], cpg_id, labels, is_vuln)
                     node_lst.append(node)
                     line_count += 1
         return node_lst
@@ -132,29 +141,36 @@ class Node(Base):
     @staticmethod
     def getNodes(cpg_id):
         session = session_factory()
-        node_lst = session.query(Node).where(Node.cpg_id == cpg_id)
+        node_lst = session.query(CSVNode).where(CSVNode.cpg_id == cpg_id)
         session.close()
         return node_lst
 
 
-class Labels(dict):
-    labels = ""
-    type = ""
-    flags = []
-    lineno = None
-    code = ""
-    childnum = None
-    funcid = None
-    classname = ""
-    namespace = ""
-    endlineno = None
-    name = ""
-    doccomment = ""
+class CSVNodeLabels(dict):
+    """CSV Node Label class."""
 
-    def __init__(self, labels, type, flags, lineno, code, childnum, funcid, classname, namespace, endlineno, name,
-                 doccomment):
-        dict.__init__(self, labels=labels,
-                      type=type,
+    def __init__(self,
+                 label, nodetype, flags, lineno,
+                 code, childnum, funcid, classname,
+                 namespace, endlineno, name, doccomment):
+        """Initialize Labels instance.
+
+        Args:
+            label:
+            nodetype:
+            flags:
+            lineno:
+            code:
+            childnum:
+            funcid:
+            classname:
+            namespace:
+            endlineno:
+            name:
+            doccomment:
+        """
+        dict.__init__(self, labels=label,
+                      nodetype=nodetype,
                       flags=flags,
                       lineno=int(lineno) if lineno else None,
                       code=code,
@@ -165,8 +181,9 @@ class Labels(dict):
                       endlineno=endlineno,
                       name=name,
                       doccomment=doccomment)
-        self.labels = labels
-        self.type = type
+
+        self.label = label
+        self.nodetype = nodetype
         self.flags = flags
         self.lineno = int(lineno) if lineno else None
         self.code = code
@@ -177,37 +194,3 @@ class Labels(dict):
         self.endlineno = endlineno
         self.name = name
         self.doccomment = doccomment
-#
-
-#
-#     @staticmethod
-#     def store_CPG(self):
-#         """
-#         connect to db and store graph id, file_path, vulnType, vulnLine,
-#         nodes, edges.
-#         :return:
-#         """
-#         pass
-#
-#     def get_CPG(self):
-#         """
-#         get CPG from DB
-#         :return:
-#         """
-#         pass
-#
-#
-# class Node:
-#     def __init__(self,nodeId, labels, graphId, isVuln):
-#         node_id      = nodeId
-#         graph_id     = graphId
-#         labels       = labels
-#         is_vuln      = isVuln
-#
-#
-# class Edge:
-#     def __init__(self, inV, outV, labels, graphId):
-#         in_vertex   = inV
-#         out_vertex  = outV
-#         labels      = labels
-#         graph_id    = graphId
