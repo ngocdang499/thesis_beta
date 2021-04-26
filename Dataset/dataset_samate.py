@@ -4,7 +4,7 @@ from random import shuffle
 
 from lxml import etree as et
 
-from dataset import Dataset
+from Dataset.dataset import Dataset
 from Utils.logs import *
 from Utils.config import *
 from Utils.tools import slice_perc
@@ -48,7 +48,7 @@ class SamateDataset(Dataset):
         return flaw_dict, lst
 
     def create_sets(self):
-        language = 'PHP'  # TODO: What are we going to do with Python?
+        language = 'PHP'
         samate_pickle = get_str('SAMATE', 'SamatePickle')
 
         if not os.path.isfile(samate_pickle):

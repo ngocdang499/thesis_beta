@@ -2,5 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tools/joern" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tools/php-ast" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tools/phpjoern" vcs="Git" />
   </component>
 </project>
