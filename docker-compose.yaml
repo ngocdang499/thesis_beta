@@ -1,15 +1,26 @@
+ 
 version: '3.7'
 
 services:
   postgres:
-      image: bitnami/postgresql:12
-      volumes:
-        - pgdata:/var/lib/postgresql/data
-      environment:
-        POSTGRESQL_DATABASE: CPG
-        POSTGRESQL_USERNAME: cpg_ml
-        POSTGRESQL_PASSWORD: codepropertygraph
-      ports:
-        - 127.0.0.1:5432:5432
+    image: bitnami/postgresql:12
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRESQL_DATABASE: ${POSTGRES_DATABASE}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 127.0.0.1:5432:5432
+  neo4j:
+    image: bitnami/neo4j:4
+    ports:
+      - 7474:7474
+      - 7473:7473
+      - 7687:7687
+    volumes:
+      - neo4j_data:/bitnami
 volumes:
   pgdata:
+  neo4j_data:
+    driver: local
