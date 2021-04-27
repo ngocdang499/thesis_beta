@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 
 def query_CPGs():
     session = session_factory()
-    CPGs_query = session.query(CPG)
+    CPGs_query = session.query(CSVGraph)
     session.close()
     return CPGs_query.all()
 
@@ -15,6 +15,6 @@ if __name__ == "__main__":
     params = config()
     engine = create_engine(
         f'postgresql://{params["user"]}:{params["password"]}@{params["host"]}:5432/{params["database"]}')
-    CPG.__table__.drop(engine)
-    Node.__table__.drop(engine)
-    Edge.__table__.drop(engine)
+    CSVGraph.__table__.drop(engine)
+    CSVNode.__table__.drop(engine)
+    CSVEdge.__table__.drop(engine)

@@ -45,6 +45,14 @@ class CSVGraph(Base):
         session.close()
         return cpg
 
+    @staticmethod
+    def getCPGs():
+        session = session_factory()
+        cpg_lst = session.query(CSVGraph).all()
+        session.close()
+        return cpg_lst
+
+
 
 class CSVEdge(Base):
     """ CSV Edge class.
@@ -90,7 +98,7 @@ class CSVEdge(Base):
     @staticmethod
     def getEdges(cpg_id):
         session = session_factory()
-        edge_lst = session.query(CSVEdge).where(CSVEdge.cpg_id == cpg_id)
+        edge_lst = session.query(CSVEdge).filter(CSVEdge.cpg_id == cpg_id).all()
         session.close()
         return edge_lst
 
@@ -101,20 +109,22 @@ class CSVNode(Base):
     id = Column(Integer, primary_key=True)
     node_id = Column(Integer)
     cpg_id = Column(Integer)
-    labels = Column(JSON)
+    # labels = Column(JSON)
+    labels = Column(String)
     is_vuln = Column(Boolean)
 
     def __init__(self, node_id, cpg_id, labels, is_vuln):
         self.node_id = node_id
         self.cpg_id = cpg_id
-        self.labels = json.dumps(labels)
+        # self.labels = json.dumps(labels)
+        self.labels = labels
         self.is_vuln = is_vuln
 
     @staticmethod
     def getNodesFromCSV(filepath, cpg_id, vuln_lines):
         node_lst = []
         with open(filepath) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file, delimiter=',',quoting=csv.QUOTE_NONE)
             line_count = 0
             for row in csv_reader:
                 if line_count == 0:
@@ -122,11 +132,12 @@ class CSVNode(Base):
                 else:
                     labels = CSVNodeLabels(row[1], row[2], row[3], row[4], row[5], row[6],
                                     row[7], row[8], row[9], row[10], row[11], row[12])
+                    # labels = row[2]
                     is_vuln = False
 
                     if labels.lineno and labels.lineno in vuln_lines:
                         is_vuln = True
-                    node = CSVNode(row[0], cpg_id, labels, is_vuln)
+                    node = CSVNode(row[0], cpg_id, ':'.join([labels.nodetype, labels.flags, str(is_vuln)]), is_vuln)
                     node_lst.append(node)
                     line_count += 1
         return node_lst
@@ -141,7 +152,7 @@ class CSVNode(Base):
     @staticmethod
     def getNodes(cpg_id):
         session = session_factory()
-        node_lst = session.query(CSVNode).where(CSVNode.cpg_id == cpg_id)
+        node_lst = session.query(CSVNode).filter(CSVNode.cpg_id == cpg_id).all()
         session.close()
         return node_lst
 
