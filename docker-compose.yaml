@@ -7,9 +7,9 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      POSTGRESQL_DATABASE: ${POSTGRES_DATABASE}
-      POSTGRESQL_USERNAME: ${POSTGRES_USER}
-      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: CPG
+      POSTGRESQL_USERNAME: cpg_ml
+      POSTGRESQL_PASSWORD: codepropertygraph
     ports:
       - 127.0.0.1:5432:5432
   neo4j:
