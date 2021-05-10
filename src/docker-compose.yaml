@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 
 services:
   postgres:
@@ -9,17 +9,18 @@ services:
       POSTGRESQL_DATABASE: CPG
       POSTGRESQL_USERNAME: cpg_ml
       POSTGRESQL_PASSWORD: codepropertygraph
+      MAX_CONNECTIONS: 500
     ports:
       - 127.0.0.1:5432:5432
   neo4j:
     image: docker.io/bitnami/neo4j:4
     ports:
-      - 127.0.0.1:7474:7474
-      - 127.0.0.1:7473:7473
-      - 127.0.0.1:7687:7687
+      - 7474:7474
+      - 7473:7473
+      - 7687:7687
     volumes:
-      - neo4j_data:/bitnami
+      - ./feature_generation/csvfiles:/bitnami/neo4j/import
 volumes:
   pgdata:
   neo4j_data:
-    driver: local
+

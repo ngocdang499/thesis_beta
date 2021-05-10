@@ -212,6 +212,7 @@ class gSpan(object):
         self._visualize = visualize
         self._where = where
         self.timestamps = dict()
+        self.result = list()
         if self._max_num_vertices < self._min_num_vertices:
             print('Max number of vertices can not be smaller than '
                   'min number of that.\n'
@@ -244,13 +245,12 @@ class gSpan(object):
 
         num_not_vuln_graphs = [g.vuln_lines for g in graph_lst].count("")
         num_vuln_graphs = len(graph_lst) - num_not_vuln_graphs
-        print([g.vuln_lines for g in graph_lst])
-        print("\nte", num_vuln_graphs, num_not_vuln_graphs)
-        print("\nheeee", self._max_support, self._min_support)
         self._max_support = self._max_support * num_not_vuln_graphs
         self._min_support = self._min_support * num_vuln_graphs
 
-        print("\nhe", self._max_support, self._min_support)
+        print("\nUnsafe/safe graphs ratio: ", num_vuln_graphs, num_not_vuln_graphs)
+        print("\nUnsafe/safe support ratio: ", self._min_support, self._max_support)
+
         # For each graph id:
         for g in graph_lst:
             gid = g.id
@@ -327,6 +327,9 @@ class gSpan(object):
             self._subgraph_mining(projected)
             self._DFScode.pop()
 
+        print("List of frequent_subgraphs:", self.result)
+
+
     def _get_support(self, projected):
         cnt = [0,0]
         for gid in set([pdfs.gid for pdfs in projected]):
@@ -345,6 +348,7 @@ class gSpan(object):
         self._frequent_subgraphs.append(copy.copy(self._DFScode))
         if self._DFScode.get_num_vertices() < self._min_num_vertices:
             return
+        self.result.append(copy.copy(self._DFScode))
         g = self._DFScode.to_graph(gid=next(self._counter),
                                    is_undirected=self._is_undirected)
 

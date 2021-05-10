@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
+from src.feature_generation.feature_generation import *
 import os
 import sys
 
@@ -22,15 +22,18 @@ def main(FLAGS=None):
     #     sys.exit()
 
     gs = gSpan(
-        min_support=0.06,
-        max_support=0.2,
+        min_support=0.4,
+        max_support=0.5,
         is_undirected=False,
-        min_num_vertices=3
+        min_num_vertices=2
     )
 
     gs.run()
+    print("out", gs.result)
     # print('\nfrequent dub: {}'.format(g.))
     # print(g.)
+    import_graph_to_neo4j(None)
+    generate_features_from_code(gs.result)
     gs.time_stats()
 
     return gs

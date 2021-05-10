@@ -25,7 +25,7 @@ class CSVGraph(Base):
     @staticmethod
     def generate_CPG(file_path, vuln_lines=[]):
         os.system('./tools/phpjoern/php2ast -f neo4j %s' % file_path)
-        os.system('./tools/joern/phpast2cpg ./nodes.csv ./rels.csv')
+        os.system('./tools/joern/phpast2cpg ./csvfiles/nodes.csv ./csvfiles/rels.csv')
 
         cpg = CSVGraph(file_path, vuln_lines)
         session = session_factory()
@@ -34,12 +34,12 @@ class CSVGraph(Base):
 
         # Add nodes to db
         print_notice(f'Adding nodes and edges from CPG no.{cpg.id} to database...')
-        node_lst = CSVNode.getNodesFromCSV('./nodes.csv', cpg.id, vuln_lines)
+        node_lst = CSVNode.getNodesFromCSV('./csvfiles/nodes.csv', cpg.id, vuln_lines)
         CSVNode.addNodes(node_lst)
 
         # Add edges to db
-        edge_lst = CSVEdge.getEdgesFromCSV('./rels.csv', cpg.id)
-        edge_lst += CSVEdge.getEdgesFromCSV('./cpg_edges.csv', cpg.id)
+        edge_lst = CSVEdge.getEdgesFromCSV('./csvfiles/rels.csv', cpg.id)
+        edge_lst += CSVEdge.getEdgesFromCSV('./csvfiles/cpg_edges.csv', cpg.id)
         CSVEdge.addEdges(edge_lst)
         session.close()
         return cpg
@@ -83,6 +83,8 @@ class CSVEdge(Base):
                     line_count += 1
                 else:
                     edge = CSVEdge(row[0], row[1], row[2], cpg_id)
+                    if len(row) > 3:
+                        edge = CSVEdge(row[0], row[1], ':'.join([row[2], row[3]]), cpg_id)
                     edge_lst.append(edge)
                     line_count += 1
         return edge_lst

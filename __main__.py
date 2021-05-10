@@ -22,7 +22,7 @@ def cmd_create_CPG(set_type, language, vuln_type):
 def main():
     init("config.ini")
     cmd_create_set()
-    cmd_create_CPG('training_set','PHP','XSS')
+    cmd_create_CPG('testing_set','PHP','SQLi')
     # print(sets['flaw_dict']['PHP']['XSS']['data/SAMATE/XSS/CWE_79/unsafe/CWE_79__array-GET__func_http_build_query__Use_untrusted_data_propertyValue_CSS-span_Style_Property_Value.php'])
     # CPG.generate_CPG("/home/mn404/Documents/Thesis/Project/tools/phpjoern/test.php")
 
