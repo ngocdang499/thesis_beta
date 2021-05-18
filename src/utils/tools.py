@@ -1,6 +1,6 @@
 import numpy as np
 import os, errno
-
+from src.utils.config import get_str
 
 def slice_perc(lst, start_perc, end_perc):
     new_lst = lst[int(len(lst) * (start_perc / 100)): int(len(lst) * (end_perc / 100))]
@@ -82,3 +82,10 @@ def silent_remove(filename):
     except OSError as e:  # this would be "except OSError, e:" before Python 2.6
         if e.errno != errno.ENOENT:  # errno.ENOENT = no such file or directory
             raise  # re-raise exception if a different error occured
+
+
+def run_phpjoern(filepath):
+    phpjoern_path = get_str("tools", "PHPJoern")
+    joern_path = get_str("tools", "Joern")
+    os.system(f'{phpjoern_path} -f neo4j {filepath}')
+    os.system(f'{joern_path} ./csvfiles/nodes.csv ./csvfiles/rels.csv')

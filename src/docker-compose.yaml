@@ -19,7 +19,7 @@ services:
       - 7473:7473
       - 7687:7687
     volumes:
-      - ./feature_generation/csvfiles:/bitnami/neo4j/import
+      - ./feature_generation/gSpan/gspan_mining/csvfiles:/bitnami/neo4j/import
 volumes:
   pgdata:
   neo4j_data:

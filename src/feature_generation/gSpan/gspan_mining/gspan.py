@@ -8,10 +8,10 @@ import copy
 import itertools
 import time
 
-from graph import AUTO_EDGE_ID
-from graph import Graph
-from graph import VACANT_GRAPH_ID
-from graph import VACANT_VERTEX_LABEL
+from src.feature_generation.gSpan.gspan_mining.graph import AUTO_EDGE_ID
+from src.feature_generation.gSpan.gspan_mining.graph import Graph
+from src.feature_generation.gSpan.gspan_mining.graph import VACANT_GRAPH_ID
+from src.feature_generation.gSpan.gspan_mining.graph import VACANT_VERTEX_LABEL
 
 from src.code_property_graph.cpg import *
 import pandas as pd
@@ -254,11 +254,11 @@ class gSpan(object):
         # For each graph id:
         for g in graph_lst:
             gid = g.id
-            is_vuln_graph = False
-            if g.vuln_lines != "":
-                is_vuln_graph = True
+            vuln_type = "Safe"
+            if g.vuln_type != "Safe":
+                vuln_type = g.vuln_type
             tgraph = Graph(gid,
-                           is_vulnerable=is_vuln_graph,
+                           vuln_type=vuln_type,
                            is_undirected=self._is_undirected,
                            eid_auto_increment=True)
             # Add vertices to graph
@@ -307,7 +307,7 @@ class gSpan(object):
             self._counter = itertools.count()
 
     @record_timestamp
-    def run(self):
+    def run(self, target):
         """Run the gSpan algorithm."""
         self._read_graphs()
         self._generate_1edge_frequent_subgraphs()
@@ -329,9 +329,8 @@ class gSpan(object):
 
         print("List of frequent_subgraphs:", self.result)
 
-
     def _get_support(self, projected):
-        cnt = [0,0]
+        cnt = [0, 0]
         for gid in set([pdfs.gid for pdfs in projected]):
             if self.graphs[gid].is_vulnerable:
                 cnt[0] += 1

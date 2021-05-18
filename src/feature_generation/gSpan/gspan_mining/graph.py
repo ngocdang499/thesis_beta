@@ -64,7 +64,7 @@ class Graph(object):
     def __init__(self,
                  gid=VACANT_GRAPH_ID,
                  is_undirected=True,
-                 is_vulnerable=False,
+                 vuln_type="Safe",
                  eid_auto_increment=True
                  ):
         """Initialize Graph instance.
@@ -76,7 +76,7 @@ class Graph(object):
         """
         self.gid = gid
         self.is_undirected = is_undirected
-        self.is_vulnerable = is_vulnerable
+        self.vuln_type = vuln_type
         self.vertices = dict()
         self.set_of_elb = collections.defaultdict(set)
         self.set_of_vlb = collections.defaultdict(set)

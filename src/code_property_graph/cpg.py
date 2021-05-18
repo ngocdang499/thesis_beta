@@ -2,6 +2,7 @@
 import os
 import csv
 from src.utils.logs import print_notice
+from src.utils.tools import run_phpjoern
 from sqlalchemy import Column, Boolean, Integer, String
 
 from src.code_property_graph.postgre_db import Base, session_factory
@@ -17,17 +18,18 @@ class CSVGraph(Base):
     id = Column(Integer, primary_key=True)
     file_path = Column(String)
     vuln_lines = Column(String)
+    vuln_type = Column(String)
 
-    def __init__(self, file_path, vuln_line_lst):
+    def __init__(self, file_path, vuln_type, vuln_line_lst):
         self.file_path = file_path
-        self.vuln_lines = ','.join([str(l) for l in vuln_line_lst])
+        self.vuln_lines = ','.join([str(line) for line in vuln_line_lst])
+        self.vuln_type = vuln_type if len(self.vuln_lines) > 0 else "Safe"
 
     @staticmethod
-    def generate_CPG(file_path, vuln_lines=[]):
-        os.system('./tools/phpjoern/php2ast -f neo4j %s' % file_path)
-        os.system('./tools/joern/phpast2cpg ./csvfiles/nodes.csv ./csvfiles/rels.csv')
+    def generate_CPG(file_path, vuln_type, vuln_lines=[]):
+        run_phpjoern(file_path)
 
-        cpg = CSVGraph(file_path, vuln_lines)
+        cpg = CSVGraph(file_path, vuln_type, vuln_lines)
         session = session_factory()
         session.add(cpg)
         session.commit()
@@ -50,7 +52,6 @@ class CSVGraph(Base):
         cpg_lst = session.query(CSVGraph).all()
         session.close()
         return cpg_lst
-
 
 
 class CSVEdge(Base):
@@ -138,7 +139,7 @@ class CSVNode(Base):
 
                     if labels.lineno and labels.lineno in vuln_lines:
                         is_vuln = True
-                    node = CSVNode(row[0], cpg_id, ':'.join([labels.nodetype, labels.flags]), is_vuln)
+                    node = CSVNode(row[0], cpg_id, ':'.join([labels.label, labels.nodetype, labels.code]), is_vuln)
                     node_lst.append(node)
                     line_count += 1
         return node_lst
@@ -184,7 +185,7 @@ class CSVNodeLabels(dict):
         dict.__init__(self, labels=label,
                       nodetype=nodetype,
                       flags=flags,
-                      lineno=int(lineno) if lineno else None,
+                      lineno=int(lineno) if lineno != "" else None,
                       code=code,
                       childnum=childnum,
                       funcid=funcid,

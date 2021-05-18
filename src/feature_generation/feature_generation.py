@@ -1,18 +1,27 @@
 import pandas as pd
 import os
+import csv
 
 from src.dataset import *
-from src.code_property_graph.postgre_db import *
+from src.code_property_graph.cpg import *
 from src.code_property_graph.neo4j_db import *
 
 
 def import_graph_to_neo4j(filepath):
     # regenerate cpg
-    os.system('../../tools/phpjoern/php2ast -f neo4j %s' % "/home/mn404/Documents/Thesis/Project/data/NVD/PHP/SQLi/CVE-2006-1049/app/administrator/includes/admin.php")
-    os.system('../../tools/joern/phpast2cpg ./csvfiles/nodes.csv ./csvfiles/rels.csv')
+    run_phpjoern(filepath)
+    # os.system('/home/mn404/Documents/Thesis/Project/tools/phpjoern/php2ast -f neo4j %s' % filepath)
+    # os.system('/home/mn404/Documents/Thesis/Project/tools/joern/phpast2cpg ./csvfiles/nodes.csv ./csvfiles/rels.csv')
 
     # import graph to neo4j
-    conn = Neo4jConnection(uri="neo4j://172.19.0.2:7687", user="neo4j", pwd="bitnami")
+    conn = Neo4jConnection(uri="neo4j://172.21.0.3:7687", user="neo4j", pwd="bitnami")
+
+    # remove leftover node
+    query_string = """
+    MATCH (n)
+    DETACH DELETE n;
+    """
+    conn.query(query_string, db='neo4j')
 
     # load nodes.csv file
     query_string = """
@@ -44,7 +53,6 @@ def import_graph_to_neo4j(filepath):
 
 
 def generate_features_from_code(frequent_patterns_set):
-    # Write to CSV
     feature_vector = []
     for dfscode in frequent_patterns_set:
         match_clause = list()
@@ -52,27 +60,59 @@ def generate_features_from_code(frequent_patterns_set):
         vertices = dict()
         for e in dfscode:
             frm, to, (vlb1, elb, vlb2) = e.frm, e.to, e.vevlb
+            print(e.frm, e.to, e.vevlb)
             if frm not in vertices:
                 vertices[frm] = vlb1
             if to not in vertices:
                 vertices[to] = vlb2
-            edge_type = "AST"
             if ':' in elb:
+                attb = elb.split(":")
                 edge_type = "CPG"
-            match_clause.append(f'(v{frm})-[:{edge_type} {{type: "{elb}"}}]->(v{to})')
+                if attb[1] != "":
+                    match_clause.append(f'(v{frm})<-[:{edge_type} {{type: "{attb[0]}", var: "{attb[1]}"}}]-(v{to})')
+                else:
+                    match_clause.append(f'(v{frm})<-[:{edge_type} {{type: "{attb[0]}"}}]-(v{to})')
+            else:
+                edge_type = "AST"
+                match_clause.append(f'(v{frm})<-[:{edge_type} {{type: "{elb}"}}]-(v{to})')
         for id, type in vertices.items():
             type = type.split(":")
-            where_clause.append(f'v{id}.type = "{type[0]}"')
-        query_string = 'MATCH {0} WHERE {1} RETURN count(v0)'.format(', '.join(match_clause), ' AND '.join(where_clause))
+            if type[2] != "":
+                type[2] = type[2].replace("\"", "")
+                where_clause.append(f'v{id}.type = "{type[1]}" AND v{id}.labels = "{type[0]}" AND v{id}.code = "{type[2]}"')
+            else:
+                where_clause.append(f'v{id}.type = "{type[1]}" AND v{id}.labels = "{type[0]}"')
+        query_string = 'MATCH {0} WHERE {1} RETURN v0'.format(', '.join(match_clause), ' AND '.join(where_clause))
+        conn = Neo4jConnection(uri="neo4j://172.19.0.3:7687", user="neo4j", pwd="bitnami")
 
-        conn = Neo4jConnection(uri="neo4j://172.19.0.2:7687", user="neo4j", pwd="bitnami")
+        print(query_string)
         res = conn.query(query_string, db='neo4j')
-        print("query sub graph", query_string)
-        feature_vector.append(res)
+
+        feature_vector.append(len(res))
+    return feature_vector
 
 
+def write_features_to_CSV(features_set):
+    with open('data_features.csv', mode='a') as employee_file:
+        for vector in features_set:
+            print(vector)
+            employee_writer = csv.writer(employee_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            employee_writer.writerow(vector)
 
 
+def create_features_file(frequent_patterns_set):
+    cpg_lst = CSVGraph.getCPGs()
+    feature_set = []
+    for g in cpg_lst:
+        import_graph_to_neo4j(os.path.join("/home/mn404/Documents/Thesis/Project", g.file_path))
+        feature_vector = generate_features_from_code(frequent_patterns_set)
+
+        isVuln = 0
+        if g.vuln_lines != "":
+            isVuln = 1
+        feature_vector.append(isVuln)
+        feature_set.append(feature_vector)
+    write_features_to_CSV(feature_set)
 
 
 

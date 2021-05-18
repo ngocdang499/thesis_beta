@@ -4,6 +4,10 @@ tools/
 # Joern CSV file
 *.csv
 
+# Environment and log file
+*.env
+*.log
+
 # Editor directories and files
 .idea
 .vscode
