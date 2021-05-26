@@ -89,3 +89,9 @@ def run_phpjoern(filepath):
     joern_path = get_str("tools", "Joern")
     os.system(f'{phpjoern_path} -f neo4j {filepath}')
     os.system(f'{joern_path} ./csvfiles/nodes.csv ./csvfiles/rels.csv')
+
+
+def gen_ast_img(filepath):
+    astimg_path = get_str("tools", "GenAst")
+    img_path = get_str("tools", "img")
+    os.system(f'php {astimg_path} generate -p nikic/php-parser -t image -f png -d {img_path} {filepath}')

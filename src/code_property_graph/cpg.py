@@ -53,6 +53,13 @@ class CSVGraph(Base):
         session.close()
         return cpg_lst
 
+    @staticmethod
+    def getCPGsByType(vtype):
+        session = session_factory()
+        cpg_lst = session.query(CSVGraph).filter_by(vuln_type=vtype).all()
+        session.close()
+        return cpg_lst
+
 
 class CSVEdge(Base):
     """ CSV Edge class.

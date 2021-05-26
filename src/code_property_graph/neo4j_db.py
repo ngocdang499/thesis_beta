@@ -25,10 +25,11 @@ def config():
 
 class Neo4jConnection:
 
-    def __init__(self, uri, user, pwd):
-        self.__uri = uri
-        self.__user = user
-        self.__pwd = pwd
+    def __init__(self):
+        params = config()
+        self.__uri = f'{params["scheme"]}://{params["host"]}:{params["port"]}'
+        self.__user = params["user"]
+        self.__pwd = params["password"]
         self.__driver = None
         try:
             self.__driver = GraphDatabase.driver(self.__uri, auth=(self.__user, self.__pwd))

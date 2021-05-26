@@ -12,8 +12,7 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.tree import DecisionTreeClassifier
 
 from . import metrics
-from .tan import TAN
-from src.utils.config import config
+from src.utils.config import *
 from src.utils.logs import print_notice, print_error
 
 
@@ -34,9 +33,6 @@ hyperparameters = {'DecisionTreeClassifier':
                         'max_features': ['log2', 'sqrt'],
                         'class_weight': ['balanced'],
                         'n_jobs': [-1]
-                        },
-                   'TAN': {'mbc': [''],
-                           'score_type': ['BAYES']
                         },
                    'SVM':
                        {'C': [0.01, 0.1, 1, 10, 100],
@@ -66,8 +62,6 @@ def create_model(model_type, params):
         model = BernoulliNB()
     elif model_type == "RandomForestClassifier":
         model = RandomForestClassifier()
-    elif model_type == "TAN":
-        model = TAN()
     elif model_type == "SVM":
         model = svm.SVC()
     elif model_type == "LogisticRegression":
@@ -88,21 +82,21 @@ def create_model(model_type, params):
     return model
 
 
-def select_model(language, vuln_type, X, Y):
-    model_type = config.get_str('model', 'Model')
-    params = config.get_dict('model', model_type + vuln_type + 'Params', optional=True)
+def select_model(vuln_type, X, Y):
+    model_type = get_str('model', 'Model')
+    params = get_dict('model', model_type + vuln_type + 'Params', optional=True)
     model = create_model(model_type, params)
 
     model.fit(X, Y)
 
-    if model_type == "DecisionTreeClassifier" and config.get_boolean('model', 'GenerateDecisionTreeGraph'):
-        create_dt_graph("%s_%s" % (language, vuln_type), model, X.columns.values)
+    if model_type == "DecisionTreeClassifier" and get_boolean('model', 'GenerateDecisionTreeGraph'):
+        create_dt_graph("%s_%s" % (vuln_type), model, X.columns.values)
 
     return model
 
 
 def select_best_model(X, Y, X_tuning, Y_tuning):
-    model_type = config.get_str('model', 'Model')
+    model_type = get_str('model', 'Model')
     best_model_i = -1
     best_auc_pr = -1
 
@@ -153,7 +147,7 @@ def get_hyperparameter_combinations(model_type):
 
 
 def select_features(X, Y):
-    k = config.get_int('model', 'kFeatures')
+    k = get_int('model', 'kFeatures')
 
     print_notice("Sorting features based on chi^2 (k=%d):" % k)
 

@@ -26,7 +26,6 @@ def get(section, name, optional=False):
 
 
 def get_str(section, name):
-    print("HERRRRRRRRRRRRRRRRRRRRR\n")
     return str(get(section, name))
 
 

@@ -7,6 +7,7 @@ import collections
 import copy
 import itertools
 import time
+import random
 
 from src.feature_generation.gSpan.gspan_mining.graph import AUTO_EDGE_ID
 from src.feature_generation.gSpan.gspan_mining.graph import Graph
@@ -26,11 +27,13 @@ def record_timestamp(func):
     return deco
 
 
-class DFSedge(object):
+class DFSedge(dict):
     """DFSedge class."""
 
     def __init__(self, frm, to, vevlb):
         """Initialize DFSedge instance."""
+        dict.__init__(self, frm=frm, to=to, vevlb=vevlb)
+
         self.frm = frm
         self.to = to
         self.vevlb = vevlb
@@ -189,6 +192,7 @@ class gSpan(object):
                  min_num_vertices=1,
                  max_num_vertices=float('inf'),
                  max_ngraphs=float('inf'),
+                 target="Safe",
                  is_undirected=False,
                  verbose=False,
                  visualize=False,
@@ -203,6 +207,7 @@ class gSpan(object):
         self._max_num_vertices = max_num_vertices
         self._DFScode = DFScode()
         self._support = [0,0]
+        self._target = target
         self._frequent_size1_subgraphs = list()
         # Include subgraphs with
         # any num(but >= 2, <= max_num_vertices) of vertices.
@@ -241,24 +246,33 @@ class gSpan(object):
     def _read_graphs(self):
         self.graphs = dict()
         # Query to DB to get graph id
-        graph_lst = CSVGraph.getCPGs()
+        vuln_graph_lst = CSVGraph.getCPGsByType("SQLi")
+        safe_graph_lst = CSVGraph.getCPGsByType("Safe")
+
+        print(len(vuln_graph_lst), len(safe_graph_lst))
+        safe_graph_lst = random.sample(safe_graph_lst, len(vuln_graph_lst))
+
+        graph_lst = safe_graph_lst + vuln_graph_lst
+        # vuln_graph_lst = [g for g in graph_lst]
 
         num_not_vuln_graphs = [g.vuln_lines for g in graph_lst].count("")
         num_vuln_graphs = len(graph_lst) - num_not_vuln_graphs
-        self._max_support = self._max_support * num_not_vuln_graphs
-        self._min_support = self._min_support * num_vuln_graphs
+        if self._target != "Safe":
+            self._max_support = self._max_support * num_not_vuln_graphs
+            self._min_support = self._min_support * num_vuln_graphs
+        else:
+            self._max_support = self._max_support * num_vuln_graphs
+            self._min_support = self._min_support * num_not_vuln_graphs
 
-        print("\nUnsafe/safe graphs ratio: ", num_vuln_graphs, num_not_vuln_graphs)
-        print("\nUnsafe/safe support ratio: ", self._min_support, self._max_support)
 
         # For each graph id:
         for g in graph_lst:
             gid = g.id
-            vuln_type = "Safe"
-            if g.vuln_type != "Safe":
-                vuln_type = g.vuln_type
+            # vuln_type = "Safe"
+            # if g.vuln_type != "Safe":
+            #     vuln_type = g.vuln_type
             tgraph = Graph(gid,
-                           vuln_type=vuln_type,
+                           vuln_type=g.vuln_type,
                            is_undirected=self._is_undirected,
                            eid_auto_increment=True)
             # Add vertices to graph
@@ -307,7 +321,7 @@ class gSpan(object):
             self._counter = itertools.count()
 
     @record_timestamp
-    def run(self, target):
+    def run(self):
         """Run the gSpan algorithm."""
         self._read_graphs()
         self._generate_1edge_frequent_subgraphs()
@@ -332,10 +346,12 @@ class gSpan(object):
     def _get_support(self, projected):
         cnt = [0, 0]
         for gid in set([pdfs.gid for pdfs in projected]):
-            if self.graphs[gid].is_vulnerable:
+            if self.graphs[gid].vuln_type != "Safe":
                 cnt[0] += 1
             else:
                 cnt[1] += 1
+        if self._target == "Safe":
+            cnt.reverse()
         return cnt
 
     def _report_size1(self, g, support):
