@@ -3,7 +3,7 @@ import os
 import csv
 from src.utils.logs import print_notice
 from src.utils.tools import run_phpjoern
-from sqlalchemy import Column, Boolean, Integer, String
+from sqlalchemy import Column, Boolean, Integer, String, and_
 
 from src.code_property_graph.postgre_db import Base, session_factory
 
@@ -23,7 +23,7 @@ class CSVGraph(Base):
     def __init__(self, file_path, vuln_type, vuln_line_lst):
         self.file_path = file_path
         self.vuln_lines = ','.join([str(line) for line in vuln_line_lst])
-        self.vuln_type = vuln_type if len(self.vuln_lines) > 0 else "Safe"
+        self.vuln_type = vuln_type if len(self.vuln_lines) > 0 else "Safe_" + vuln_type
 
     @staticmethod
     def generate_CPG(file_path, vuln_type, vuln_lines=[]):

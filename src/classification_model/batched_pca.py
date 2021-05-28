@@ -2,7 +2,7 @@ from sklearn.decomposition import IncrementalPCA
 
 
 class BatchedPCA:
-    def __init__(self, all_features, n_components):
+    def __init__(self, n_components):
         # self.all_features = all_features
 
         self.ipca = IncrementalPCA(n_components=n_components)
@@ -19,5 +19,5 @@ class BatchedPCA:
         #     if col not in X:
         #         X[col] = 0
 
-        return self.ipca.transform(X, y)
+        return self.ipca.transform(X)
 

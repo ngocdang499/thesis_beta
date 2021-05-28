@@ -30,7 +30,6 @@ def main(FLAGS=None):
     )
 
     gs.run()
-    print("out", gs.result)
     # print('\nfrequent dub: {}'.format(g.))
     # print(g.)
     gs.time_stats()

@@ -187,18 +187,20 @@ class gSpan(object):
     """`gSpan` algorithm."""
 
     def __init__(self,
+                 mine_type=1,
                  min_support=0.5,
                  max_support=0.3,
                  min_num_vertices=1,
                  max_num_vertices=float('inf'),
                  max_ngraphs=float('inf'),
-                 target="Safe",
+                 target="",
                  is_undirected=False,
                  verbose=False,
                  visualize=False,
                  where=False):
         """Initialize gSpan instance."""
         self.graphs = dict()
+        self._mine_type = mine_type
         self._max_ngraphs = max_ngraphs
         self._is_undirected = is_undirected
         self._min_support = min_support
@@ -206,7 +208,7 @@ class gSpan(object):
         self._min_num_vertices = min_num_vertices
         self._max_num_vertices = max_num_vertices
         self._DFScode = DFScode()
-        self._support = [0,0]
+        self._support = [0, 0, 0]
         self._target = target
         self._frequent_size1_subgraphs = list()
         # Include subgraphs with
@@ -246,31 +248,36 @@ class gSpan(object):
     def _read_graphs(self):
         self.graphs = dict()
         # Query to DB to get graph id
-        vuln_graph_lst = CSVGraph.getCPGsByType("SQLi")
-        safe_graph_lst = CSVGraph.getCPGsByType("Safe")
+        if "Safe_" in self._target:
+            safe_graph_lst = CSVGraph.getCPGsByType(self._target)
+            vuln_graph_lst = CSVGraph.getCPGsByType(self._target.replace("Safe_", ""))
+        else:
+            vuln_graph_lst = CSVGraph.getCPGsByType(self._target)
+            safe_graph_lst = CSVGraph.getCPGsByType("Safe_"+self._target)
 
         print(len(vuln_graph_lst), len(safe_graph_lst))
-        safe_graph_lst = random.sample(safe_graph_lst, len(vuln_graph_lst))
+        if self._mine_type == 2 and len(safe_graph_lst) > len(vuln_graph_lst):
+            safe_graph_lst = random.sample(safe_graph_lst, len(vuln_graph_lst))
 
+        print(len(vuln_graph_lst), len(safe_graph_lst))
         graph_lst = safe_graph_lst + vuln_graph_lst
         # vuln_graph_lst = [g for g in graph_lst]
 
-        num_not_vuln_graphs = [g.vuln_lines for g in graph_lst].count("")
-        num_vuln_graphs = len(graph_lst) - num_not_vuln_graphs
-        if self._target != "Safe":
-            self._max_support = self._max_support * num_not_vuln_graphs
-            self._min_support = self._min_support * num_vuln_graphs
+        # num_not_vuln_graphs = [g.vuln_lines for g in graph_lst].count("")
+        # num_vuln_graphs = len(graph_lst) - num_not_vuln_graphs
+        if self._mine_type == 2:
+            self._min_support = self._min_support * len(graph_lst)
         else:
-            self._max_support = self._max_support * num_vuln_graphs
-            self._min_support = self._min_support * num_not_vuln_graphs
-
+            if "Safe_" not in self._target:
+                self._max_support = self._max_support * len(safe_graph_lst)
+                self._min_support = self._min_support * len(vuln_graph_lst)
+            else:
+                self._max_support = self._max_support * len(vuln_graph_lst)
+                self._min_support = self._min_support * len(safe_graph_lst)
 
         # For each graph id:
         for g in graph_lst:
             gid = g.id
-            # vuln_type = "Safe"
-            # if g.vuln_type != "Safe":
-            #     vuln_type = g.vuln_type
             tgraph = Graph(gid,
                            vuln_type=g.vuln_type,
                            is_undirected=self._is_undirected,
@@ -278,6 +285,9 @@ class gSpan(object):
             # Add vertices to graph
             vertices = CSVNode.getNodes(gid)
             for vt in vertices:
+                # Mine for patterns only appear in vulnerable source code
+                if self._mine_type == 1 and "Safe_" not in self._target:
+                    vt.labels = vt.labels + ":" + str(vt.is_vuln)
                 tgraph.add_vertex(vt.node_id, vt.labels)
             # Add edges to graph
             edges = CSVEdge.getEdges(gid)
@@ -346,11 +356,18 @@ class gSpan(object):
     def _get_support(self, projected):
         cnt = [0, 0]
         for gid in set([pdfs.gid for pdfs in projected]):
-            if self.graphs[gid].vuln_type != "Safe":
+            if self._mine_type == 2:
                 cnt[0] += 1
             else:
-                cnt[1] += 1
-        if self._target == "Safe":
+                target_vuln = self._target
+                if "Safe_" in target_vuln:
+                    target_vuln = target_vuln.replace("Safe_", "")
+
+                if self.graphs[gid].vuln_type == target_vuln:
+                    cnt[0] += 1
+                elif self.graphs[gid].vuln_type == "Safe_" + target_vuln:
+                    cnt[1] += 1
+        if "Safe_" in self._target:
             cnt.reverse()
         return cnt
 

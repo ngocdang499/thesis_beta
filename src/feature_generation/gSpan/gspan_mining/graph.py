@@ -103,6 +103,7 @@ class Graph(object):
             return self
         if self.eid_auto_increment:
             eid = next(self.counter)
+
         self.vertices[frm].add_edge(eid, frm, to, elb)
         self.set_of_elb[elb].add((frm, to))
         if self.is_undirected:

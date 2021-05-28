@@ -84,7 +84,6 @@ def generate_features_from_code(frequent_patterns_set):
         query_string = 'MATCH {0} WHERE {1} RETURN v0'.format(', '.join(match_clause), ' AND '.join(where_clause))
         conn = Neo4jConnection()
 
-        print(query_string)
         res = conn.query(query_string, db='neo4j')
 
         feature_vector.append(len(res))
@@ -101,15 +100,14 @@ def write_features_to_CSV(features_set):
             employee_writer.writerow(vector)
 
 
-def create_features_file(frequent_patterns_set):
-    cpg_lst = CSVGraph.getCPGs()
+def create_features_file(frequent_patterns_set, cpg_lst, vuln):
+    # cpg_lst = CSVGraph.getCPGs()
     feature_set = []
     for g in cpg_lst:
         import_graph_to_neo4j(os.path.join("/home/mn404/Documents/Thesis/Project", g.file_path))
         feature_vector = generate_features_from_code(frequent_patterns_set)
-        print("ffff", feature_vector)
         isVuln = 0
-        if g.vuln_lines != "":
+        if g.vuln_type == vuln:
             isVuln = 1
         feature_vector.append(isVuln)
         feature_set.append(feature_vector)

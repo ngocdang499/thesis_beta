@@ -2,7 +2,7 @@ from neo4j import GraphDatabase
 
 from configparser import ConfigParser
 
-CONFIG_FILE = 'database.ini'
+CONFIG_FILE = 'src/code_property_graph/database.ini'
 SECTION     = 'neo4j'
 
 

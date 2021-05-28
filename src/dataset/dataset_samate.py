@@ -47,6 +47,11 @@ class SamateDataset(Dataset):
 
         return flaw_dict, lst
 
+    # def create_CPG(self, set_type, language, vuln_type):
+    #     print_banner("Generate CPGs and import to database")
+    #     for filepath in sets[set_type][language][vuln_type]:
+    #         CSVGraph.generate_CPG(filepath, vuln_type, sets['flaw_dict'][language][vuln_type][filepath])
+
     def create_sets(self):
         language = 'PHP'
         samate_pickle = get_str('SAMATE', 'SamatePickle')

@@ -1,12 +1,14 @@
 import json
 import pickle
 
+import numpy as np
+
 from src.utils.logs import *
 from src.dataset.dataset_factory import *
 from src.utils.tools import gen_ast_img
 
 from src.feature_generation.feature_generation import *
-
+from src.classification_model.batched_pca import *
 from src.feature_generation.gSpan.gspan_mining.gspan import gSpan
 
 from src.classification_model.train import *
@@ -26,12 +28,14 @@ def cmd_gen_ast_img(filepath):
 def cmd_create_CPG(set_type, language, vuln_type):
     print_banner("Generate CPGs and import to database")
     for filepath in sets[set_type][language][vuln_type]:
+        print(vuln_type)
         CSVGraph.generate_CPG(filepath, vuln_type, sets['flaw_dict'][language][vuln_type][filepath])
 
 
-def cmd_mine_frequent_pattern(min_support, max_support, target):
+def cmd_mine_frequent_pattern(min_support, max_support, target, mine_type=1):
     print_banner("Mine frequent graph patterns")
     gs = gSpan(
+        mine_type=mine_type,
         min_support=min_support,
         max_support=max_support,
         is_undirected=False,
@@ -40,6 +44,7 @@ def cmd_mine_frequent_pattern(min_support, max_support, target):
     )
     gs.run()
     gs.time_stats()
+    print(gs.result)
     return gs.result.copy()
 
     # gs1 = gSpan(
@@ -80,7 +85,7 @@ def cmd_read_patterns_from_file():
         return None
 
 
-def cmd_train_model():
+def cmd_train_model(pca=None):
     print_banner(f'Train classifier model')
 
     dataset_file = get_str("processed_files", "FeaturesFile")
@@ -89,12 +94,18 @@ def cmd_train_model():
     X = dataset.iloc[:, :-1].values
     y = dataset.iloc[:, -1].values
 
+    if pca:
+        X = pca.transform(X,y)
+
+    print(len(y))
+
     from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     # Building and training the model
     classifier = select_model("SQLi", X_train, y_train)
 
+    print("y test",np.count_nonzero(y_test))
     # Predicting the Test set results
     y_pred = classifier.predict(X_test)
     # print(y_pred, y_test[4])
@@ -106,7 +117,7 @@ def cmd_train_model():
 
     # Generating accuracy, precision, recall and f1-score
     from sklearn.metrics import classification_report
-    target_names = ['SQLi', 'Safe']
+    target_names = ['Safe', 'SQLi']
     print(classification_report(y_test, y_pred, target_names=target_names))
 
     return classifier
@@ -131,43 +142,106 @@ def cmd_load_model(vuln_type, model_name):
     return loaded_model
 
 
+def cmd_generate_feature_vector(filename):
+    print_banner(f'Generate feature vector')
+
+    import_graph_to_neo4j(filename)
+    features = cmd_read_patterns_from_file()
+
+    return generate_features_from_code(features)
 
 
-def main():
-    init("config.ini")
-    # cmd_create_set()
-    # cmd_create_CPG('training_set', 'PHP', 'SQLi')
-    # print_banner("Mine Safe")
-    # patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe")
-    # print_banner("Mine Unsafe")
-    # patterns = patterns + cmd_mine_frequent_pattern(0.5, 0.5, "Unsafe")
-    # print_banner("Result patterns")
-    # write_patterns_to_file(patterns)
-    # generate_features_from_code(patterns)
-    # print(patterns)
-    # pt = cmd_read_patterns_from_file()
-    # print(pt)
-    # if pt:
-    #     print("here")
-    #     create_features_file(pt)
-    # cmd_gen_ast_img("data/SAMATE/Injection/CWE_89/safe/CWE_89__array-GET__CAST-cast_float__multiple_AS-concatenation.php")
-    # import_graph_to_neo4j("test.php")
+def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
+    print_banner(f'Predict {vuln_type} in file with {model_name}')
+
     dataset_file = get_str("processed_files", "FeaturesFile")
     dataset = pd.read_csv(dataset_file, header=None)
 
     X = dataset.iloc[:, :-1].values
     y = dataset.iloc[:, -1].values
 
-    model = cmd_load_model("SQLi", "RDF")
-    y_pred = model.predict(X)
-    from sklearn.metrics import confusion_matrix
-    cm = confusion_matrix(y, y_pred)
-    print(cm)
+    pca = BatchedPCA(30)
+    pca.partial_fit(X, y)
 
-    # Generating accuracy, precision, recall and f1-score
-    from sklearn.metrics import classification_report
-    target_names = ['SQLi', 'Safe']
-    print(classification_report(y, y_pred, target_names=target_names))
+    feature_vector = np.array(cmd_generate_feature_vector(filepath))
+    print("Feature", feature_vector[84])
+    feature_vector = [feature_vector]
+
+    feature_vector = pca.transform(feature_vector)
+    classifier = cmd_load_model(vuln_type, model_name)
+
+    res = classifier.predict(feature_vector)
+    print(res)
+
+
+def main():
+    init("config.ini")
+    # cmd_create_set()
+    # cmd_create_CPG('tuning_set', 'PHP', 'XSS')
+    print_banner("Mine Safe")
+    patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
+    print(len(patterns))
+    print_banner("Mine Unsafe")
+    patterns = patterns + cmd_mine_frequent_pattern(0.5, 0.5, "SQLi")
+    print(len(patterns))
+    print_banner("Mine Other")
+    patterns = patterns + cmd_mine_frequent_pattern(1, 1, "SQLi", 2)
+    print(len(patterns))
+    # print_banner("Result patterns")
+    write_patterns_to_file(patterns)
+
+
+    # generate_features_from_code(patterns)
+    # print(patterns)
+    # pt = cmd_read_patterns_from_file()
+    # # #
+    # create_features_file(pt, CSVGraph.getCPGs(), "SQLi")
+
+    # dataset_file = get_str("processed_files", "FeaturesFile")
+    # dataset = pd.read_csv(dataset_file, header=None)
+    #
+    # X = dataset.iloc[:, :-1].values
+    # y = dataset.iloc[:, -1].values
+    #
+    # pca = BatchedPCA(30)
+    # pca.partial_fit(X,y)
+    #
+    # print("vuln", np.count_nonzero(y))
+    #
+    # model = cmd_train_model(pca)
+    # cmd_save_model("SQLi", "RDF", model)
+    # generate_features_from_code(pt)
+    # print(pt)
+    # if pt:
+    #     print("here")
+    #     create_features_file(pt)
+    # cmd_gen_ast_img("data/SAMATE/Injection/CWE_89/safe/CWE_89__array-GET__CAST-cast_float__multiple_AS-concatenation.php")
+    # import_graph_to_neo4j("test.php")
+
+
+    # dataset_file = get_str("processed_files", "FeaturesFile")
+    # dataset = pd.read_csv(dataset_file, header=None)
+    #
+    # X = dataset.iloc[:, :-1].values
+    # y = dataset.iloc[:, -1].values
+    #
+    # pca = BatchedPCA(30)
+    # pca.partial_fit(X,y)
+    #
+    # X = pca.transform(X)
+    # model = cmd_load_model("SQLi", "DT")
+    #
+    # y_pred = model.predict(X)
+    # from sklearn.metrics import confusion_matrix
+    # cm = confusion_matrix(y, y_pred)
+    # print(cm)
+    # #
+    # # # Generating accuracy, precision, recall and f1-score
+    # from sklearn.metrics import classification_report
+    # target_names = ['Safe', 'SQLi']
+    # print(classification_report(y, y_pred, target_names=target_names))
+
+    # cmd_predict_file("test.php","SQLi","RDF")
 
 if __name__ == "__main__":
     main()
