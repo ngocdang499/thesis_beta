@@ -27,10 +27,46 @@ def cmd_gen_ast_img(filepath):
 
 def cmd_create_CPG(set_type, language, vuln_type):
     print_banner("Generate CPGs and import to database")
+    x = []
+    y = []
+    import time
+    _time = []
     for filepath in sets[set_type][language][vuln_type]:
         print(vuln_type)
+        count1 = len(open(filepath).readlines())
+        start_time = time.time()
         CSVGraph.generate_CPG(filepath, vuln_type, sets['flaw_dict'][language][vuln_type][filepath])
+        _time.append(time.time() - start_time)
+        count2 = len(open('/home/mn404/Documents/Thesis/Project/csvfiles/nodes.csv').readlines())
+        x.append(count1 - 10)
+        y.append(count2-1)
 
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # plotting the points
+    x = np.array(x)
+    plt.scatter(x, y)
+    m, b = np.polyfit(x, y, 1)
+    plt.plot(x, m * x + b)
+    # naming the x axis
+    plt.xlabel('Number of lines of code')
+    # naming the y axis
+    plt.ylabel('Number of node in generated CPG')
+
+    # function to show the plot
+    plt.show()
+
+    plt.scatter(x, _time)
+    m, b = np.polyfit(x, _time, 1)
+    plt.plot(x, m * x + b)
+    # naming the x axis
+    plt.xlabel('Number of lines of code')
+    # naming the y axis
+    plt.ylabel('Execution time for generating CPG (second)')
+
+    # function to show the plot
+    plt.show()
 
 def cmd_mine_frequent_pattern(min_support, max_support, target, mine_type=1):
     print_banner("Mine frequent graph patterns")
@@ -85,42 +121,41 @@ def cmd_read_patterns_from_file():
         return None
 
 
-def cmd_train_model(pca=None):
+def cmd_train_model(vuln_type, X_train, y_train, pca=None):
     print_banner(f'Train classifier model')
 
-    dataset_file = get_str("processed_files", "FeaturesFile")
-    dataset = pd.read_csv(dataset_file, header=None)
-
-    X = dataset.iloc[:, :-1].values
-    y = dataset.iloc[:, -1].values
-
-    if pca:
-        X = pca.transform(X,y)
-
-    print(len(y))
-
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    if 0 < pca < len(y_train):
+        pca = BatchedPCA(30)
+        pca.partial_fit(X_train,y_train)
+        # # #
+        X_train = pca.transform(X_train)
 
     # Building and training the model
-    classifier = select_model("SQLi", X_train, y_train)
+    classifier = select_model(vuln_type, X_train, y_train)
 
-    print("y test",np.count_nonzero(y_test))
-    # Predicting the Test set results
-    y_pred = classifier.predict(X_test)
-    # print(y_pred, y_test[4])
+    return classifier
 
-    # # Making the Confusion Matrix
+
+def cmd_test_model(vuln_type, model_name, model, X_test, y_test, pca):
+    print_banner(f'Test classifier model')
+
+    if 0 < pca < len(y_test):
+        pca = BatchedPCA(30)
+        pca.partial_fit(X_test,y_test)
+        # # #
+        X_test = pca.transform(X_test)
+
+    y_pred = model.predict(X_test)
     from sklearn.metrics import confusion_matrix
     cm = confusion_matrix(y_test, y_pred)
     print(cm)
 
     # Generating accuracy, precision, recall and f1-score
     from sklearn.metrics import classification_report
-    target_names = ['Safe', 'SQLi']
+    target_names = ['Safe', vuln_type]
     print(classification_report(y_test, y_pred, target_names=target_names))
 
-    return classifier
+    metrics.display_pr_curve(f'{vuln_type} {model_name}', model, X_test, y_test)
 
 
 def cmd_save_model(vuln_type, model_name, model):
@@ -157,6 +192,7 @@ def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
     dataset_file = get_str("processed_files", "FeaturesFile")
     dataset = pd.read_csv(dataset_file, header=None)
 
+    print(dataset)
     X = dataset.iloc[:, :-1].values
     y = dataset.iloc[:, -1].values
 
@@ -164,7 +200,7 @@ def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
     pca.partial_fit(X, y)
 
     feature_vector = np.array(cmd_generate_feature_vector(filepath))
-    print("Feature", feature_vector[84])
+
     feature_vector = [feature_vector]
 
     feature_vector = pca.transform(feature_vector)
@@ -177,38 +213,43 @@ def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
 def main():
     init("config.ini")
     # cmd_create_set()
+    # cmd_create_CPG('training_set', 'PHP', 'SQLi')
     # cmd_create_CPG('tuning_set', 'PHP', 'XSS')
-    print_banner("Mine Safe")
-    patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
-    print(len(patterns))
-    print_banner("Mine Unsafe")
-    patterns = patterns + cmd_mine_frequent_pattern(0.5, 0.5, "SQLi")
-    print(len(patterns))
-    print_banner("Mine Other")
-    patterns = patterns + cmd_mine_frequent_pattern(1, 1, "SQLi", 2)
-    print(len(patterns))
+    # print_banner("Mine Safe")
+    # patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
+    # # print(len(patterns))
+    # print_banner("Mine Unsafe")
+    # import random
+    # patterns = patterns + random.sample(cmd_mine_frequent_pattern(0.6, 0.4, "SQLi"), 40)
+    # # print(len(patterns))
+    # print_banner("Mine Other")
+    # patterns = patterns + random.sample(cmd_mine_frequent_pattern(0.9, 0.1, "SQLi", 2), 25)
+    # print(len(patterns))
     # print_banner("Result patterns")
-    write_patterns_to_file(patterns)
+    # write_patterns_to_file(patterns)
 
 
     # generate_features_from_code(patterns)
     # print(patterns)
     # pt = cmd_read_patterns_from_file()
-    # # #
+    # # # #
     # create_features_file(pt, CSVGraph.getCPGs(), "SQLi")
 
-    # dataset_file = get_str("processed_files", "FeaturesFile")
-    # dataset = pd.read_csv(dataset_file, header=None)
-    #
-    # X = dataset.iloc[:, :-1].values
-    # y = dataset.iloc[:, -1].values
-    #
+    dataset_file = get_str("processed_files", "FeaturesFile")
+    dataset = pd.read_csv(dataset_file, header=None)
+    # #
+    X = dataset.iloc[:, :-1].values
+    y = dataset.iloc[:, -1].values
+    # #
     # pca = BatchedPCA(30)
     # pca.partial_fit(X,y)
-    #
+    # # #
     # print("vuln", np.count_nonzero(y))
     #
-    # model = cmd_train_model(pca)
+    model = cmd_train_model("XSS", X, y, 30)
+    cmd_test_model("XSS", "SVM", model, X, y, 30)
+    import src.classification_model.metrics
+
     # cmd_save_model("SQLi", "RDF", model)
     # generate_features_from_code(pt)
     # print(pt)
@@ -218,30 +259,26 @@ def main():
     # cmd_gen_ast_img("data/SAMATE/Injection/CWE_89/safe/CWE_89__array-GET__CAST-cast_float__multiple_AS-concatenation.php")
     # import_graph_to_neo4j("test.php")
 
-
     # dataset_file = get_str("processed_files", "FeaturesFile")
     # dataset = pd.read_csv(dataset_file, header=None)
-    #
+    # # # #
     # X = dataset.iloc[:, :-1].values
     # y = dataset.iloc[:, -1].values
-    #
+    # # # #
     # pca = BatchedPCA(30)
     # pca.partial_fit(X,y)
-    #
+    # # # #
     # X = pca.transform(X)
-    # model = cmd_load_model("SQLi", "DT")
-    #
+    # model = cmd_load_model("XSS", "DT")
+    # # # #
     # y_pred = model.predict(X)
-    # from sklearn.metrics import confusion_matrix
-    # cm = confusion_matrix(y, y_pred)
-    # print(cm)
-    # #
-    # # # Generating accuracy, precision, recall and f1-score
+    # print(len(y_pred))
+    # # # # Generating accuracy, precision, recall and f1-score
     # from sklearn.metrics import classification_report
-    # target_names = ['Safe', 'SQLi']
+    # target_names = ['Safe', 'XSS']
     # print(classification_report(y, y_pred, target_names=target_names))
-
-    # cmd_predict_file("test.php","SQLi","RDF")
+    #
+    # cmd_predict_file("test.php","XSS","RDF")
 
 if __name__ == "__main__":
     main()
