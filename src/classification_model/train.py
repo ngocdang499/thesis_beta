@@ -8,6 +8,7 @@ from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.tree import DecisionTreeClassifier
 
@@ -22,10 +23,6 @@ hyperparameters = {'DecisionTreeClassifier':
                         'max_features': ['log2', 'sqrt', None],
                         'n_jobs': [-1],
                         'class_weight': ['balanced']},
-                   'BernoulliNB': {
-                       'alpha': [0.001, 0.003, 0.01, 0.03, 0.1, 1, 3, 10, 30, 100],
-                       'binarize': [None]
-                   },
                    'RandomForestClassifier':
                        {'n_estimators': [300, 500],
                         'max_depth': [5, 15, 30, None],
@@ -36,38 +33,24 @@ hyperparameters = {'DecisionTreeClassifier':
                         },
                    'SVM':
                        {'C': [0.01, 0.1, 1, 10, 100],
-                        'gamma': [0.0001, 0.01, 0.1, 1, 10, 100, 'auto'],
-                        'kernel': ['rbf'],
+                        'gamma': [0.0005, 0.05, 0.5, 5, 50, 500, 'auto'],
+                        'kernel': ['poly'],
                         'probability': [True],
                         'shrinking': [False],
                         'class_weight': ['balanced']
-                        },
-                   'LogisticRegression':
-                       {'penalty': ['l1', 'l2'],
-                        'C': [0.001, 0.01, 0.1, 1, 10, 100],
-                        'class_weight': ['balanced'],
-                        'n_jobs': [-1]
-                        },
-                   'DummyClassifier': {
-                        'strategy': ['most_frequent', 'stratified', 'uniform']},
+                        }
                    }
 
 
 def create_model(model_type, params):
     model = None
 
-    if model_type == "DecisionTreeClassifier":
+    if model_type == "DT":
         model = DecisionTreeClassifier()
-    elif model_type == "BernoulliNB":
-        model = BernoulliNB()
-    elif model_type == "RandomForestClassifier":
+    elif model_type == "RDF":
         model = RandomForestClassifier()
     elif model_type == "SVM":
         model = svm.SVC()
-    elif model_type == "LogisticRegression":
-        model = LogisticRegression()
-    elif model_type == "DummyClassifier":
-        model = DummyClassifier()
 
     if params is not None:
         for parameter, value in params.items():
@@ -82,21 +65,21 @@ def create_model(model_type, params):
     return model
 
 
-def select_model(vuln_type, X, Y):
-    model_type = get_str('model', 'Model')
+def select_model(vuln_type, model_type, X, Y):
     params = get_dict('model', model_type + vuln_type + 'Params', optional=True)
     model = create_model(model_type, params)
 
     model.fit(X, Y)
 
-    if model_type == "DecisionTreeClassifier" and get_boolean('model', 'GenerateDecisionTreeGraph'):
+    if model_type == "DT" and get_boolean('model', 'GenerateDecisionTreeGraph'):
         create_dt_graph("%s_%s" % (vuln_type), model, X.columns.values)
 
+    # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
+    # select_best_model(X_train, y_train, X_test, y_test)
     return model
 
 
-def select_best_model(X, Y, X_tuning, Y_tuning):
-    model_type = get_str('model', 'Model')
+def select_best_model(X, Y, X_tuning, Y_tuning, model_type):
     best_model_i = -1
     best_auc_pr = -1
 

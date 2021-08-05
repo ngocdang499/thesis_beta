@@ -1,8 +1,5 @@
 data/
-csvfiles/
-models/
-tools/ast-img-gen
-tools/
+tools/ast-img-gen/
 # Joern CSV file
 *.csv
 

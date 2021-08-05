@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Dang Minh Ngoc - Thesis</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="{{ url_for('static', filename= 'vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="{{ url_for('static', filename= 'css/sb-admin-2.css') }}" rel="stylesheet">
+    <link rel="stylesheet"
+		href="https://unpkg.com/popoto/dist/popoto.min.css">
+</head>
+
+<body id="page-top">
+    <!-- Header -->
+    <div id="header">
+        <!-- Topbar -->
+        <nav class="navbar navbar-expand navbar-light bg-gray-primary topbar mb-4 static-top shadow rounded">
+
+            <!-- Nav Item - Tool logo -->  
+            <div>
+                <a class="nav-link" href="#">
+                    <img class="img-logo shadow" id="uni-logo"
+                        src="{{ url_for('static', filename='img/588px-Logo-hcmut.svg.png') }}">
+                    <img class="img-logo shadow" id="dep-logo" 
+                        src="{{ url_for('static', filename='img/cse-logo.png') }}">
+
+                    <!-- <span class="text-gray-200 medium shadow ai">Ho Chi Minh City University of Technology</span> -->
+                    <span id="uni-name" class="text-gray-200 medium shadow">Ho Chi Minh City University of Technology</span>
+                    <span id="dep-name" class="text-gray-200 medium shadow">Department of Computer Science and Engineering</span>
+                                        
+                </a>
+
+                <!-- Dropdown - User Information -->
+            </div>
+
+            <!-- Topbar Navbar -->
+            <ul class="navbar-nav ml-auto">   
+                <div class="topbar-divider"></div>
+                
+                <!-- Nav Item - Data -->
+                <li class="nav-item active centered-v-margin">
+                    <a class="nav-link" href="index.html">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Data</span></a>
+                </li>
+                <div class="topbar-divider"></div>
+                
+
+                <!-- Nav Item - Pattern -->
+                <li class="nav-item active centered-v-margin">
+                    <a class="nav-link" href="index.html">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Patterns</span></a>
+                </li>
+                <div class="topbar-divider"></div>
+
+                <!-- Nav Item - Model -->
+                <li class="nav-item active centered-v-margin">
+                    <a class="nav-link" href="index.html">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Model</span></a>
+                </li>
+                <div class="topbar-divider"></div>
+
+                <!-- Nav Item - Model -->
+                <li class="nav-item active centered-v-margin">
+                    <a class="nav-link" href="index.html">
+                        <i class="fas fa-fw fa-tachometer-alt"></i>
+                        <span>Predict</span></a>
+                </li>
+                <div class="topbar-divider"></div>
+
+
+                <!-- Nav Item - Messages -->
+                <!-- <li class="nav-item dropdown no-arrow mx-1"> -->
+                    <!-- <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-envelope fa-fw"></i>
+                        
+                        <span class="badge badge-danger badge-counter">7</span>
+                    </a> -->
+                    <!-- Dropdown - Messages -->
+                    <!-- <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                        aria-labelledby="messagesDropdown">
+                        <h6 class="dropdown-header">
+                            Message Center
+                        </h6>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="dropdown-list-image mr-3">
+                                <img class="rounded-circle" src="img/undraw_profile_1.svg"
+                                    alt="...">
+                                <div class="status-indicator bg-success"></div>
+                            </div>
+                            <div class="font-weight-bold">
+                                <div class="text-truncate">Hi there! I am wondering if you can help me with a
+                                    problem I've been having.</div>
+                                <div class="small text-gray-500">Emily Fowler · 58m</div>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="dropdown-list-image mr-3">
+                                <img class="rounded-circle" src="img/undraw_profile_2.svg"
+                                    alt="...">
+                                <div class="status-indicator"></div>
+                            </div>
+                            <div>
+                                <div class="text-truncate">I have the photos that you ordered last month, how
+                                    would you like them sent to you?</div>
+                                <div class="small text-gray-500">Jae Chun · 1d</div>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="dropdown-list-image mr-3">
+                                <img class="rounded-circle" src="img/undraw_profile_3.svg"
+                                    alt="...">
+                                <div class="status-indicator bg-warning"></div>
+                            </div>
+                            <div>
+                                <div class="text-truncate">Last month's report looks great, I am very happy with
+                                    the progress so far, keep up the good work!</div>
+                                <div class="small text-gray-500">Morgan Alvarez · 2d</div>
+                            </div>
+                        </a>
+                        <a class="dropdown-item d-flex align-items-center" href="#">
+                            <div class="dropdown-list-image mr-3">
+                                <img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
+                                    alt="...">
+                                <div class="status-indicator bg-success"></div>
+                            </div>
+                            <div>
+                                <div class="text-truncate">Am I a good boy? The reason I ask is because someone
+                                    told me that people say this to all dogs, even if they aren't good...</div>
+                                <div class="small text-gray-500">Chicken the Dog · 2w</div>
+                            </div>
+                        </a>
+                        <a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
+                    </div> -->
+                <!-- </li> -->
+
+                
+
+            </ul>
+
+        </nav>
+        <!-- End of Topbar -->
+    </div>
+    <!-- End Header -->
+
+    <!-- Title -->
+    <div id="title">
+        <h6><b>PREDICT</b></h6>
+        <p class="small">Upload source code to scan for existence of vulnerabilities.</p>
+    </div>
+    <!-- End Title -->
+
+    <!-- Display Area -->
+    <div id="display-area" class="rounded">
+        
+        <!-- Page Wrapper -->
+        <div id="wrapper">
+
+            <!-- Sidebar -->
+            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion rounded outer" id="accordionSidebar">
+                
+                <!-- Sidebar - Brand -->
+                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                    <div class="sidebar-brand-icon rotate-n-15">
+                        <i class="fas fa-laugh-wink"></i>
+                    </div>
+                    <div class="sidebar-brand-text mx-3">Thesis <sup>1</sup></div>
+                </a>
+
+                <!-- Divider -->
+                <hr class="sidebar-divider my-0">              
+
+                <!-- Divider -->
+                <hr class="sidebar-divider">
+                
+                <form action="/scan" method="post" enctype="multipart/form-data">
+                    <!-- Heading -->
+                    <div class="sidebar-heading">
+                        Import code
+                    </div>
+
+                    <!-- Nav Item - Pages Collapse Menu -->
+                    <li class="nav-item">
+                        <input type="file" id="real-file"  name="target-file" hidden="hidden">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUpload"
+                            aria-expanded="false" aria-controls="collapseUpload">
+                            <i class="fas fa-upload fa-fw"></i>
+                            
+                            <span id="custom-button">Upload Code</span>
+                        </a>
+                        <div id="collapseUpload" class="collapse multi-collapse" aria-labelledby="headingPages" >
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <span class="collapse-item" id="custom-text">No file chosen, yet.</span>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider">
+
+                    <!-- Heading -->
+                    <div class="sidebar-heading">
+                        Vulnerability
+                    </div>
+
+                    <!-- Nav Item - Pages Collapse Menu -->
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseVulns"
+                            aria-expanded="false" aria-controls="collapseVulns">
+                            <i class="fa fa-bug fa-fw"></i>
+                            <span>Type of Vulnerability</span>
+                        </a>
+                        <div id="collapseVulns" class="collapse multi-collapse" aria-labelledby="headingPages" >
+                            <div class="bg-white py-2 collapse-inner rounded btn-group-vertical btn-group-toggle" data-toggle="buttons">
+                                <label class="btn collapse-item active">
+                                <input type="radio" name="vuln-type" value="SQLi" id="option1" autocomplete="off" {% if not vuln_type or vuln_type=='SQLi' %} checked {% endif %}>SQLi
+                                </label>
+                                <label class="btn collapse-item">
+                                <input type="radio" name="vuln-type" value="XSS" id="option2" autocomplete="off" {% if vuln_type=='XSS' %} checked {% endif %}>XSS
+                                </label>
+                                <label class="btn collapse-item">
+                                <input type="radio" name="vuln-type" value="Both" id="option3" autocomplete="off" {% if vuln_type=='Both' %} checked {% endif %}>Both
+                                </label>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider">
+
+                    <!-- Heading -->
+                    <div class="sidebar-heading">
+                        Classifier
+                    </div>
+
+                    <!-- Nav Item - Pages Collapse Menu -->
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseModels"
+                            aria-expanded="false" aria-controls="collapseModels">
+                            <i class="fa fa-cog fa-fw"></i>
+                            <span>Type of Classifier</span>
+                        </a>
+                        <div id="collapseModels" class="collapse multi-collapse" aria-labelledby="headingPages" >
+                            <div class="bg-white py-2 collapse-inner rounded btn-group-vertical btn-group-toggle" data-toggle="buttons">
+                                <label class="btn collapse-item active">
+                                    <input type="radio" name="classifier" value="DT" id="options1" autocomplete="off" {% if not classifier or classifier=='DT' %} checked {% endif %}>Decision Tree
+                                  </label>
+                                  <label class="btn collapse-item">
+                                    <input type="radio" name="classifier" value="RDF" id="options2" autocomplete="off" {% if classifier=='RDF' %} checked {% endif %}>Random Forest
+                                  </label>
+                                  <label class="btn collapse-item">
+                                    <input type="radio" name="classifier" value="SVM" id="options3" autocomplete="off" {% if classifier=='SVM' %} checked {% endif %}>SVM
+                                  </label>
+                            </div>
+                        </div>
+                    </li>
+
+                    
+                    <!-- Divider -->
+                    <hr class="sidebar-divider d-none d-md-block">
+
+                    <!-- Sidebar Message -->
+                    <div class="sidebar-card d-none d-lg-flex">
+                        <img class="sidebar-card-illustration mb-2" src="{{ url_for('static', filename='img/undraw_rocket.svg') }}" alt="...">
+                        <p class="text-center mb-2"><strong>PHP Vuln Predict with ML</strong> is in developing process and is part of the thesis</p>
+                        <button class="btn btn-success btn-sm" type="submit" href="https://startbootstrap.com/theme/sb-admin-pro">Start Scanning</button>
+                    </div>
+                </form>
+                
+
+                <!-- Sidebar Toggler (Sidebar) -->
+                <div class="text-center d-none d-md-inline">
+                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                </div>
+
+            </ul>
+            <!-- End of Sidebar -->
+
+            <!-- Content Wrapper -->
+            <div id="content-wrapper" class="d-flex flex-column">
+
+                <!-- Main Content -->
+                <div id="content">
+
+                    <!-- Begin Page Content -->
+                    <div class="container-fluid ">
+
+                        <!-- Page Heading -->
+                        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                            <h1 class="h3 mb-0 text-gray-400">Result</h1>
+                            <a href="/report" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                    class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                        </div>
+
+                        <!-- Content Row -->
+                        <div class="row">
+
+                            <!-- SQLi (Monthly) Card Example -->
+                            <div class="col-xl-6 col-md-12 mb-8" style="padding-top: 0.4rem;">
+                                <div class="card border-left-primary shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                    SQL INJECTION</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{% if sqli=='' %} 0 {% else %} {{sqli}} {% endif %}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fa fa-table fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Earnings (Monthly) Card Example -->
+                            <div class="col-xl-6 col-md-12 mb-8" style="padding-top: 0.4rem;">
+                                <div class="card border-left-success shadow h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    CROSS SITE SCRIPTING</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">{% if xss=='' %} 0 {% else %} {{xss}} {% endif %}</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fa fa-link fa-2x text-gray-300"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div></div>
+                        <!-- Content Row -->
+
+                        <div class="row" id="display-row">
+
+                            <!-- Area Chart -->
+                            <div class="col-xl-12 col-lg-14">
+                                <div class="card shadow ">
+                                    <!-- Card Header - Dropdown -->
+                                    <div
+                                        class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                        <h6 class="m-0 font-weight-bold text-primary">Code Properties Graph</h6>
+                                        <div class="dropdown no-arrow">
+                                            <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                                                aria-labelledby="dropdownMenuLink">
+                                                <div class="dropdown-header">Change View:</div>
+                                                <a id="editor-btn" class="dropdown-item" href="#editor">Editor</a>
+                                                <a id="cpg-btn" class="dropdown-item" href="#cpg">CPG</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Card Body -->
+                                    <div class="card-body">
+                                        <!-- Editor -->
+                                        <div id="editor">{% if source_code %}{{ source_code }}{% endif %}</div>
+                                  
+                                        <!-- CPG -->
+                                        <div id="cpg" class="chart-area rounded">
+
+                                                <div id="popoto-taxonomy" class="ppt-taxo-nav">
+                                        
+                                                </div>
+                                        
+                                                <div id="popoto-graph" class="ppt-div-graph">
+                                                    <!-- Graph is generated here -->
+                                                </div>
+                                                                    
+                                            
+                                        </div>
+
+                                        <div id="ast" display="none"></div>
+                                    
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                    <!-- /.container-fluid -->
+
+                </div>
+                <!-- End of Main Content -->
+
+                <!-- Footer -->
+                <footer class="sticky-footer">
+                    <div class="container my-auto">
+                        <div class="copyright text-center my-auto">
+                            <span>Copyright &copy; Your Website 2021</span>
+                        </div>
+                    </div>
+                </footer>
+                <!-- End of Footer -->
+
+            </div>
+            <!-- End of Content Wrapper -->
+
+        </div>
+        <!-- End of Page Wrapper -->
+    </div>
+    <!-- End Display Area -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="login.html">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}" charset="utf-8"></script>
+    <script src="{{ url_for('static', filename='/node_modules/d3/dist/d3.min.js') }}" charset="utf-8"></script>
+    <script src="{{ url_for('static', filename='node_modules/popoto/dist/popoto.min.js') }}" charset="utf-8"></script>
+
+    <script>
+
+        // Demo Neo4j database settings hosted on GrapheneDb
+        popoto.rest.CYPHER_URL = "http://localhost:7474/db/data/transaction/commit";
+        popoto.rest.AUTHORIZATION = "Basic " + btoa("neo4j:bitnami");
+
+        popoto.provider.node.Provider = {
+            "Node": {
+                "labels": "labels",
+                "type": "type", 
+                "flags": "flags", 
+                "code": "code"
+                //"sizeCypher": "MATCH (n) WHERE id(n) = {id} MATCH (n)-[r]-() RETURN sum(r.weight) AS c"
+            },
+            "Node": {
+            returnAttributes: ["name", "id", "labels", "type", "flags", "code"],
+            constraintAttribute: "id",
+            "autoExpandRelations": true
+        }
+        };
+
+        /**
+         * Here a listener is used to retrieve the total results count and update the page accordingly.
+         * This listener will be called on every graph modification.
+         */
+        
+
+        
+
+        popoto.start("Node");
+
+    </script>
+		
+
+
+
+    <!-- Switch body card -->
+    <script>
+        const targetDiv1 = document.getElementById("editor");
+        const btn1 = document.getElementById("editor-btn");
+
+        const targetDiv2 = document.getElementById("cpg");
+        const btn2 = document.getElementById("cpg-btn");
+
+
+        // Initial setting
+        targetDiv2.style.display = "none";
+        targetDiv1.style.display = "block";
+
+
+        btn1.onclick = function () {
+            if (targetDiv1.style.display == "none") {
+                targetDiv1.style.display = "block";
+
+                targetDiv2.style.display = "none";
+            };
+        }
+        btn2.onclick = function () {
+            if (targetDiv2.style.display == "none") {
+                targetDiv2.style.display = "block";
+
+                targetDiv1.style.display = "none";
+                draw();
+            };
+        }
+    </script>
+
+    <!-- Neovis Javascript -->
+    <script src="https://rawgit.com/neo4j-contrib/neovis.js/master/dist/neovis.js"></script>
+
+
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+		// define config car
+		// instantiate nodevis object
+		// draw
+
+		var viz;
+
+		function draw() {
+			var config = {
+				container_id: "viz",
+				server_url: "bolt://localhost:7687",
+				server_user: "neo4j",
+				server_password: "bitnami",
+				labels: {
+					//"Character": "name",
+					"Node": {
+						"labels": "labels",
+                        "type": "type", 
+                        "flags": "flags", 
+                        "code": "code"
+						//"sizeCypher": "MATCH (n) WHERE id(n) = {id} MATCH (n)-[r]-() RETURN sum(r.weight) AS c"
+					}
+				},
+				relationships: {
+					"Edge": {
+						"type": "type"
+					}
+				},
+				initial_cypher: "Match (n)-[r]->(m) Return n,r,m"
+			};
+
+			viz = new NeoVis.default(config);
+			viz.render();
+			console.log(viz);
+		}
+
+        $("#reload").click(function() {
+
+            var cypher = $("#cypher").val();
+
+            if (cypher.length > 3) {
+                viz.renderWithCypher(cypher);
+            } else {
+                console.log("reload");
+                viz.reload();
+            }
+        });
+
+    </script>
+
+    <script>
+        const realFileBtn = document.getElementById("real-file");
+        const customBtn = document.getElementById("custom-button");
+        const customTxt = document.getElementById("custom-text");
+
+        customBtn.addEventListener("click", function() {
+            
+            realFileBtn.click();
+        });
+
+        realFileBtn.addEventListener("change", function() {
+            if (realFileBtn.value) {
+                customTxt.innerHTML = realFileBtn.value.match(
+                /[\/\\]([\w\d\s\.\-\(\)]+)$/
+                )[1];
+            } else {
+                customTxt.innerHTML = "No file chosen";
+            }
+        });
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/dracula");
+            editor.session.setMode("ace/mode/php");
+            editor.setOptions({
+                fontSize: "12pt"
+            });
+
+            editor.setReadOnly(true);
+
+            // var Range = ace.require('ace/range').Range;
+
+            // var range = new Range(24, 0, 25, 0);
+            // var marker = editor.getSession().addMarker(range,"errorHighlight", "fullLine");
+    </script>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    
+
+    <!-- Core plugin JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{{ url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
+
+
+
+</body>
+
+</html>

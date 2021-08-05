@@ -19,17 +19,19 @@ class CSVGraph(Base):
     file_path = Column(String)
     vuln_lines = Column(String)
     vuln_type = Column(String)
+    set_type = Column(String)  # training / tuning / testing set
 
-    def __init__(self, file_path, vuln_type, vuln_line_lst):
+    def __init__(self, file_path, vuln_type, set_type, vuln_line_lst):
         self.file_path = file_path
         self.vuln_lines = ','.join([str(line) for line in vuln_line_lst])
         self.vuln_type = vuln_type if len(self.vuln_lines) > 0 else "Safe_" + vuln_type
+        self.set_type = set_type
 
     @staticmethod
-    def generate_CPG(file_path, vuln_type, vuln_lines=[]):
+    def generate_CPG(file_path, vuln_type, set_type, vuln_lines=[]):
         run_phpjoern(file_path)
 
-        cpg = CSVGraph(file_path, vuln_type, vuln_lines)
+        cpg = CSVGraph(file_path, vuln_type, set_type, vuln_lines)
         session = session_factory()
         session.add(cpg)
         session.commit()
@@ -54,9 +56,16 @@ class CSVGraph(Base):
         return cpg_lst
 
     @staticmethod
-    def getCPGsByType(vtype):
+    def getCPGsByType(vtype, stype):
         session = session_factory()
-        cpg_lst = session.query(CSVGraph).filter_by(vuln_type=vtype).all()
+        cpg_lst = session.query(CSVGraph).filter_by(vuln_type=vtype, set_type=f'{vtype.replace("Safe_","")}_{stype}').all()
+        session.close()
+        return cpg_lst
+
+    @staticmethod
+    def getCPGsBySet(vtype, stype):
+        session = session_factory()
+        cpg_lst = session.query(CSVGraph).filter_by(set_type=f'{vtype.replace("Safe_", "")}_{stype}').all()
         session.close()
         return cpg_lst
 

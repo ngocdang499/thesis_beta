@@ -208,7 +208,8 @@ class gSpan(object):
         self._min_num_vertices = min_num_vertices
         self._max_num_vertices = max_num_vertices
         self._DFScode = DFScode()
-        self._support = [0, 0, 0]
+        self._support = [0, 0]
+        self._support_gid = [[],[]]
         self._target = target
         self._frequent_size1_subgraphs = list()
         # Include subgraphs with
@@ -249,15 +250,20 @@ class gSpan(object):
         self.graphs = dict()
         # Query to DB to get graph id
         if "Safe_" in self._target:
-            safe_graph_lst = CSVGraph.getCPGsByType(self._target)
-            vuln_graph_lst = CSVGraph.getCPGsByType(self._target.replace("Safe_", ""))
+            safe_graph_lst = CSVGraph.getCPGsByType(self._target, 'training_set')
+            vuln_graph_lst = CSVGraph.getCPGsByType(self._target.replace("Safe_", ""), 'training_set')
         else:
-            vuln_graph_lst = CSVGraph.getCPGsByType(self._target)
-            safe_graph_lst = CSVGraph.getCPGsByType("Safe_"+self._target)
+            vuln_graph_lst = CSVGraph.getCPGsByType(self._target, 'training_set')
+            safe_graph_lst = CSVGraph.getCPGsByType("Safe_"+self._target, 'training_set')
 
-        print(len(vuln_graph_lst), len(safe_graph_lst))
-        if self._mine_type == 2 and len(safe_graph_lst) > len(vuln_graph_lst):
-            safe_graph_lst = random.sample(safe_graph_lst, len(vuln_graph_lst))
+        if self._mine_type == 2:
+            vuln_graph_lst = safe_graph_lst + vuln_graph_lst
+            if self._target == 'XSS':
+                safe_graph_lst = CSVGraph.getCPGsBySet('SQLi', 'tuning_set')
+                vuln_graph_lst = random.sample(vuln_graph_lst, len(safe_graph_lst))
+            else:
+                safe_graph_lst = CSVGraph.getCPGsBySet('XSS', 'tuning_set')
+                # safe_graph_lst = random.sample(safe_graph_lst, len(vuln_graph_lst))
 
         print(len(vuln_graph_lst), len(safe_graph_lst))
         graph_lst = safe_graph_lst + vuln_graph_lst
@@ -265,15 +271,13 @@ class gSpan(object):
 
         # num_not_vuln_graphs = [g.vuln_lines for g in graph_lst].count("")
         # num_vuln_graphs = len(graph_lst) - num_not_vuln_graphs
-        if self._mine_type == 2:
-            self._min_support = self._min_support * len(graph_lst)
+
+        if "Safe_" not in self._target:
+            self._max_support = self._max_support * len(safe_graph_lst)
+            self._min_support = self._min_support * len(vuln_graph_lst)
         else:
-            if "Safe_" not in self._target:
-                self._max_support = self._max_support * len(safe_graph_lst)
-                self._min_support = self._min_support * len(vuln_graph_lst)
-            else:
-                self._max_support = self._max_support * len(vuln_graph_lst)
-                self._min_support = self._min_support * len(safe_graph_lst)
+            self._max_support = self._max_support * len(vuln_graph_lst)
+            self._min_support = self._min_support * len(safe_graph_lst)
 
         # For each graph id:
         for g in graph_lst:
@@ -351,13 +355,19 @@ class gSpan(object):
             self._subgraph_mining(projected)
             self._DFScode.pop()
 
-        print("List of frequent_subgraphs:", self.result)
 
     def _get_support(self, projected):
         cnt = [0, 0]
+        gid_lst = [[],[]]
         for gid in set([pdfs.gid for pdfs in projected]):
             if self._mine_type == 2:
-                cnt[0] += 1
+                if self._target in self.graphs[gid].vuln_type:
+                    cnt[0] += 1
+                    gid_lst[0].append(gid)
+                else:
+                    cnt[1] += 1
+                    gid_lst[1].append(gid)
+                # cnt[0] += 1
             else:
                 target_vuln = self._target
                 if "Safe_" in target_vuln:
@@ -365,11 +375,14 @@ class gSpan(object):
 
                 if self.graphs[gid].vuln_type == target_vuln:
                     cnt[0] += 1
+                    gid_lst[0].append(gid)
                 elif self.graphs[gid].vuln_type == "Safe_" + target_vuln:
                     cnt[1] += 1
+                    gid_lst[1].append(gid)
         if "Safe_" in self._target:
             cnt.reverse()
-        return cnt
+            gid_lst.reverse()
+        return cnt, gid_lst
 
     def _report_size1(self, g, support):
         g.display()
@@ -380,7 +393,7 @@ class gSpan(object):
         self._frequent_subgraphs.append(copy.copy(self._DFScode))
         if self._DFScode.get_num_vertices() < self._min_num_vertices:
             return
-        self.result.append(copy.copy(self._DFScode))
+        self.result.append([copy.copy(self._DFScode), copy.copy(self._support), copy.copy(self._support_gid)])
         g = self._DFScode.to_graph(gid=next(self._counter),
                                    is_undirected=self._is_undirected)
 
@@ -560,7 +573,7 @@ class gSpan(object):
         return res
 
     def _subgraph_mining(self, projected):
-        self._support = self._get_support(projected)
+        self._support, self._support_gid = self._get_support(projected)
         if self._support[0] < self._min_support:
             return
         if self._support[1] > self._max_support:

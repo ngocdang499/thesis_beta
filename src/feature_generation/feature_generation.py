@@ -92,7 +92,7 @@ def generate_features_from_code(frequent_patterns_set):
 
 def write_features_to_CSV(features_set):
     print(features_set)
-    with open('csvfiles/data_features.csv', mode='a') as employee_file:
+    with open('csvfiles/tuning_features.csv', mode='a') as employee_file:
         print("tmp")
         for vector in features_set:
             print(vector)
@@ -107,6 +107,7 @@ def create_features_file(frequent_patterns_set, cpg_lst, vuln):
         import_graph_to_neo4j(os.path.join("/home/mn404/Documents/Thesis/Project", g.file_path))
         feature_vector = generate_features_from_code(frequent_patterns_set)
         isVuln = 0
+        print(g.vuln_type, vuln, g.vuln_type == vuln)
         if g.vuln_type == vuln:
             isVuln = 1
         feature_vector.append(isVuln)
