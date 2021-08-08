@@ -389,7 +389,10 @@
                                                 <div id="popoto-graph" class="ppt-div-graph">
                                                     <!-- Graph is generated here -->
                                                 </div>
-                                                                    
+                                                         
+                                                <div id="popoto-cypher" class="ppt-container-cypher">
+                                                    <!-- Cypher query viewer will be generated here -->
+                                                </div>
                                             
                                         </div>
 
@@ -452,7 +455,7 @@
 
 
     <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js') }}" charset="utf-8"></script>
-    <script src="{{ url_for('static', filename='/node_modules/d3/dist/d3.min.js') }}" charset="utf-8"></script>
+    <script src="{{ url_for('static', filename='node_modules/d3/dist/d3.min.js') }}" charset="utf-8"></script>
     <script src="{{ url_for('static', filename='node_modules/popoto/dist/popoto.min.js') }}" charset="utf-8"></script>
 
     <script>
@@ -460,20 +463,12 @@
         // Demo Neo4j database settings hosted on GrapheneDb
         popoto.rest.CYPHER_URL = "http://localhost:7474/db/data/transaction/commit";
         popoto.rest.AUTHORIZATION = "Basic " + btoa("neo4j:bitnami");
-
+        popoto.query.COLLECT_RELATIONS_WITH_VALUES = true;
         popoto.provider.node.Provider = {
             "Node": {
-                "labels": "labels",
-                "type": "type", 
-                "flags": "flags", 
-                "code": "code"
-                //"sizeCypher": "MATCH (n) WHERE id(n) = {id} MATCH (n)-[r]-() RETURN sum(r.weight) AS c"
-            },
-            "Node": {
-            returnAttributes: ["name", "id", "labels", "type", "flags", "code"],
-            constraintAttribute: "id",
-            "autoExpandRelations": true
-        }
+            returnAttributes: ["type", "id", "name", "labels", "flags", "code", "lineno"],
+            constraintAttribute: "type"
+            }
         };
 
         /**

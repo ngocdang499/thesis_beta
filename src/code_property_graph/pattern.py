@@ -27,8 +27,16 @@ class Pattern(Base):
         self.mine_type = mine_type
 
     @staticmethod
-    def addEdges(pattern_lst):
+    def addPatterns(pattern_lst):
         session = session_factory()
         session.bulk_save_objects(pattern_lst)
         session.commit()
         session.close()
+
+    @staticmethod
+    def getPatterns(vuln_type):
+        session = session_factory()
+        ptn_lst = session.query(Pattern).filter(Pattern.vuln_type == vuln_type).all()
+        ptn_lst += session.query(Pattern).filter(Pattern.vuln_type == "Safe_"+vuln_type).all()
+        session.close()
+        return ptn_lst

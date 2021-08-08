@@ -84,16 +84,16 @@ def cmd_mine_frequent_pattern(min_support, max_support, target, mine_type=1):
     gs.run()
     gs.time_stats()
     cmd_import_pattern_to_db(gs.result, target, mine_type)
-    print(gs.result)
+    # print(gs.result)
     return gs.result.copy()
 
 def cmd_import_pattern_to_db(gs_result, vuln_type, mine_type):
     print_banner("Import Patterns to DB")
     pt_lst = []
     for res in gs_result:
-        pt = Pattern(str(res[0]),str(res[2]), res[1][0], res[1][1], vuln_type, mine_type)
+        pt = Pattern(json.dumps(str(res[0])), str(res[2]), res[1][0], res[1][1], vuln_type, mine_type)
         pt_lst.append(pt)
-    Pattern.addEdges(pt_lst)
+    Pattern.addPatterns(pt_lst)
     # gs1 = gSpan(
     #     min_support=min_support,
     #     max_support=max_support,
@@ -111,20 +111,35 @@ def cmd_import_pattern_to_db(gs_result, vuln_type, mine_type):
     # write_patterns_to_file(gs.result)
 
 
-def write_patterns_to_file(patterns_set):
-    patterns_file = get_str("processed_files", "PatternsFile")
+def write_patterns_to_file(patterns_set, vuln_type):
+
+    patterns_file = get_str("processed_files", f'{vuln_type}PatternsFile')
     with open(patterns_file, 'a') as f:
         for pattern in patterns_set:
-            f.write(json.dumps(pattern)+"\n")
+            pt = pattern.pattern[1:-1].replace("frm", "'frm'")
+            pt = pt.replace("to", "'to'")
+            pt = pt.replace("vevlb", "'vevlb'")
+            # pt = pt.replace("'", "\"")
+            pt = pt.replace("))", "]}")
+            pt = pt.replace("=(", ": [")
+            pt = pt.replace(",(", ", {")
+            pt = pt.replace("(", "{")
+            pt = pt.replace("=", ": ")
+            pt = pt.replace("\"", "\\\"")
+            pt = pt.replace("\\\\\"", "\\\"")
+            pt = pt.replace("'", "\"")
+            f.write(pt+"\n")
 
 
 def cmd_read_patterns_from_file(vuln_type):
     patterns_file = get_str("processed_files", f'{vuln_type}PatternsFile')
     if os.path.isfile(patterns_file):
+        print("AAAAAAAAAAAAA\n")
         patterns_set = []
         with open(patterns_file, 'r') as f:
             lines = f.readlines()
             for l in lines:
+                print(l)
                 patterns_set.append(json.loads(l))
         return patterns_set
     else:
@@ -221,53 +236,88 @@ def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
     return res
 
 
-# def main():
-#     init("config.ini")
-#     cmd_create_set('SAMATE')
-#     # cmd_create_CPG('training_set', 'PHP', 'SQLi')
-#     # cmd_create_CPG('testing_set', 'PHP', 'SQLi')
-#     # print_banner("Mine Safe")
-#     # patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
-#     # print(len(patterns))
-#     # write_patterns_to_file(patterns)
+def main():
+    init("config.ini")
+    # cmd_create_set('SAMATE')
+    # cmd_create_CPG('training_set', 'PHP', 'XSS')
+    # cmd_create_CPG('training_set', 'PHP', 'SQLi')
+    #
+    # cmd_create_CPG('testing_set', 'PHP', 'XSS')
+    # cmd_create_CPG('testing_set', 'PHP', 'SQLi')
+    #
+    # cmd_create_CPG('tuning_set', 'PHP', 'XSS')
+    # cmd_create_CPG('tuning_set', 'PHP', 'SQLi')
+
+#     print_banner("Mine Safe")
+#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_XSS")
+#     print(len(patterns))
+# #     # write_patterns_to_file(patterns)
+# # # #
+# #     print_banner("Mine Unsafe")
+#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "XSS")
+#     print(len(patterns))
+# # #     write_patterns_to_file(patterns)
+# # #
+# #     # print_banner("Mine Other")
+#     patterns = cmd_mine_frequent_pattern(0.8, 0.2, "XSS", 2)
+#     print(len(patterns))
+# #     print_banner("Result patterns")
+#     patterns_set = Pattern.getPatterns("XSS")
+#     write_patterns_to_file(patterns_set, "XSS")
+# #
+# #
+# #     # generate_features_from_code(patterns)
+# #     # print(patterns)
+#     pt = cmd_read_patterns_from_file('XSS')
+# #     print(pt)
+# # #     # # # # # #
+# # # #     # # # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "training_set"), "SQLi")
+#     create_features_file(pt, CSVGraph.getCPGsByType("XSS", "training_set") + CSVGraph.getCPGsByType("Safe_XSS", "training_set") + CSVGraph.getCPGsByType("SQLi", "tuning_set"), "XSS")
+# #
 #
-#     # print_banner("Mine Unsafe")
-#     # patterns = cmd_mine_frequent_pattern(0.5, 0.4, "SQLi")
-#     # print(len(patterns))
-#     # write_patterns_to_file(patterns)
+#     print_banner("Mine Safe")
+#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
+#     print(len(patterns))
+# #     # write_patterns_to_file(patterns)
+# # # #
+# #     print_banner("Mine Unsafe")
+#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "SQLi")
+#     print(len(patterns))
+# # #     write_patterns_to_file(patterns)
+# # #
+# #     # print_banner("Mine Other")
+#     patterns = cmd_mine_frequent_pattern(0.8, 0.2, "SQLi", 2)
+#     print(len(patterns))
+# #     print_banner("Result patterns")
+#     patterns_set = Pattern.getPatterns("SQLi")
+#     write_patterns_to_file(patterns_set, "SQLi")
 #
-#     # print_banner("Mine Other")
-#     # patterns = cmd_mine_frequent_pattern(0.9, 0.1, "SQLi", 2)
-#     # print(len(patterns))
-#     # print_banner("Result patterns")
-#     # write_patterns_to_file(patterns)
-#
-#
-#     # generate_features_from_code(patterns)
-#     # print(patterns)
-#     # pt = cmd_read_patterns_from_file('XSS')
-#     # # # # # #
-#     # # # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "training_set"), "SQLi")
-#     # create_features_file(pt, CSVGraph.getCPGsByType("XSS", "training_set") + CSVGraph.getCPGsByType("Safe_XSS", "training_set") + random.sample(CSVGraph.getCPGsByType("SQLi", "training_set"), 200), "XSS")
-#
-#     # dataset_file = get_str("processed_files", "SQLiFeaturesFile")
-#     # dataset = pd.read_csv(dataset_file, header=None)
-#     # # dataset = random.shuffle(dataset)
-#     # dataset = dataset.sample(frac=1).reset_index(drop=True)
-#     # # #
-#     # X = dataset.iloc[:, :-1].values
-#     # y = dataset.iloc[:, -1].values
+#     pt = cmd_read_patterns_from_file('SQLi')
+# #     print(pt)
+# # #     # # # # # #
+# # # #     # # # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "training_set"), "SQLi")
+#     create_features_file(pt, CSVGraph.getCPGsByType("SQLi", "training_set") + CSVGraph.getCPGsByType("Safe_SQLi", "training_set") + CSVGraph.getCPGsByType("XSS", "tuning_set"), "SQLi")
+
+
+    dataset_file = get_str("processed_files", "XSSFeaturesFile")
+    dataset = pd.read_csv(dataset_file, header=None)
+    # dataset = random.shuffle(dataset)
+    dataset = dataset.sample(frac=1).reset_index(drop=True)
+    print(dataset)
+    # #
+    X = dataset.iloc[:, :-1].values
+    y = dataset.iloc[:, -1].values
 #     # #
-#     # # pca = BatchedPCA(30)
-#     # # pca.partial_fit(X,y)
+    pca = BatchedPCA(30)
+    pca.partial_fit(X,y)
 #     # # # #
-#     # print("vuln", np.count_nonzero(y))
-#     #
-#     # model = cmd_train_model("SQLi", "SVM", X, y, 30)
-#     # cmd_test_model("SQLi", "SVM", model, X, y, 30)
+    print("vuln", np.count_nonzero(y))
+
+    model = cmd_train_model("XSS", "SVM", X, y, 0)
+    cmd_test_model("XSS", "SVM", model, X, y, 0)
 #     # import src.classification_model.metrics
 #     #
-#     # cmd_save_model("SQLi", "SVM", model)
+    cmd_save_model("XSS", "SVM", model)
 #     # generate_features_from_code(pt)
 #     # print(pt)
 #     # if pt:

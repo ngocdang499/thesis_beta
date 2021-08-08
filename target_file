@@ -1,14 +1,11 @@
-<?php
-/* 
-Unsafe sample
+<!-- 
+Safe sample
 input : get the $_GET['userData'] in an array
-Uses a full_special_chars_filter via filter_var function
-construction : concatenation with simple quote
-*/
+sanitize : cast in float
+File : use of untrusted data in a property value (CSS)
+-->
 
-
-
-/*Copyright 2015 Bertrand STIVALET 
+<!--Copyright 2015 Bertrand STIVALET 
 
 Permission is hereby granted, without written agreement or royalty fee, to
 
@@ -39,32 +36,29 @@ THE SOFTWARE IS PROVIDED ON AN "AS-IS" BASIS AND AUTHORS HAVE NO
 
 OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 
-MODIFICATIONS.*/
+MODIFICATIONS.-->
 
 
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+<?php
 $array = array();
 $array[] = 'safe' ;
 $array[] = $_GET['userData'] ;
 $array[] = 'safe' ;
 $tainted = $array[1] ;
 
-$sanitized = filter_var($tainted, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-  $tainted = $sanitized ;
-     
+$tainted = (float) $tainted ;
 
-$query = "SELECT lastname, firstname FROM drivers, vehicles WHERE drivers.id = vehicles.ownerid AND vehicles.tag='". $tainted . "'";
 
-$conn = mysql_connect('localhost', 'mysql_user', 'mysql_password'); // Connection to the database (address, user, password)
-mysql_select_db('dbname') ;
-echo "query : ". $query ."<br /><br />" ;
-
-//flaw
-$res = mysql_query($query); //execution
-
-while($data =mysql_fetch_array($res)){
-print_r($data) ;
-echo "<br />" ;
-} 
-mysql_close($conn);
-
+echo "body { color :". $tainted ." ; }" ;
 ?>
+ </style> 
+ </script>
+</head>
+<body>
+<h1>Hello World!</h1>
+</body>
+</html>

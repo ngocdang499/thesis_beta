@@ -5,7 +5,9 @@ services:
     image: bitnami/postgresql:12
     volumes:
       - pgdata:/var/lib/postgresql/data
+#    command: postgres -D '/opt/bitnami/postgresql/conf' -c 'max_connections=200'
     environment:
+
       POSTGRESQL_DATABASE: CPG
       POSTGRESQL_USERNAME: cpg_ml
       POSTGRESQL_PASSWORD: codepropertygraph

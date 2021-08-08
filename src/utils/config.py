@@ -2,13 +2,14 @@ import configparser
 import ast
 
 from src.utils.logs import print_error
+from src.code_property_graph.postgre_db import Base, engine
 
 config = None
 
 
 def init(config_filename='config.ini'):
     global config
-
+    Base.metadata.create_all(engine)
     if config is None:
         config = configparser.RawConfigParser()
         config.read(config_filename)
