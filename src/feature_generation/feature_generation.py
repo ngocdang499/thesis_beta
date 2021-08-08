@@ -104,7 +104,7 @@ def create_features_file(frequent_patterns_set, cpg_lst, vuln):
     # cpg_lst = CSVGraph.getCPGs()
     feature_set = []
     for g in cpg_lst:
-        import_graph_to_neo4j(os.path.join("/home/mn404/Documents/Thesis/Project", g.file_path))
+        import_graph_to_neo4j(os.path.join("/home/mn404/Documents/Project", g.file_path))
         feature_vector = generate_features_from_code(frequent_patterns_set)
         isVuln = 0
         if g.vuln_type == vuln:

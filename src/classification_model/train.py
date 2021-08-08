@@ -63,7 +63,7 @@ def create_model(model_type, params):
     elif model_type == "RandomForestClassifier":
         model = RandomForestClassifier()
     elif model_type == "SVM":
-        model = svm.SVC()
+        model = svm.SVC(kernel='rbf', C=100, gamma=0.01)
     elif model_type == "LogisticRegression":
         model = LogisticRegression()
     elif model_type == "DummyClassifier":
@@ -73,11 +73,11 @@ def create_model(model_type, params):
         for parameter, value in params.items():
             setattr(model, parameter, value)
 
-    if model_type == "SVM":
-        n_estimators = 10
-
-        # Because SVM is so slow, we use a bagging classifier to speed things up
-        model = BaggingClassifier(model, max_samples=1.0 / n_estimators, n_estimators=n_estimators, n_jobs=4)
+    # if model_type == "SVM":
+    #     n_estimators = 10
+    #
+    #     # Because SVM is so slow, we use a bagging classifier to speed things up
+    #     model = BaggingClassifier(model, max_samples=1.0 / n_estimators, n_estimators=n_estimators, n_jobs=4)
 
     return model
 

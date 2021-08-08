@@ -249,11 +249,11 @@ class gSpan(object):
         self.graphs = dict()
         # Query to DB to get graph id
         if "Safe_" in self._target:
-            safe_graph_lst = CSVGraph.getCPGsByType(self._target)
-            vuln_graph_lst = CSVGraph.getCPGsByType(self._target.replace("Safe_", ""))
+            safe_graph_lst = CSVGraph.getCPGsByType(self._target, "testing_set")
+            vuln_graph_lst = CSVGraph.getCPGsByType(self._target.replace("Safe_", ""), "testing_set")
         else:
-            vuln_graph_lst = CSVGraph.getCPGsByType(self._target)
-            safe_graph_lst = CSVGraph.getCPGsByType("Safe_"+self._target)
+            vuln_graph_lst = CSVGraph.getCPGsByType(self._target, "testing_set")
+            safe_graph_lst = CSVGraph.getCPGsByType("Safe_"+self._target, "testing_set")
 
         print(len(vuln_graph_lst), len(safe_graph_lst))
         if self._mine_type == 2 and len(safe_graph_lst) > len(vuln_graph_lst):

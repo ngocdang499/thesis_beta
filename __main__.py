@@ -78,6 +78,7 @@ def cmd_read_patterns_from_file():
         with open(patterns_file, 'r') as f:
             lines = f.readlines()
             for l in lines:
+                # print(l)
                 patterns_set.append(json.loads(l))
         return patterns_set
     else:
@@ -98,27 +99,27 @@ def cmd_train_model(pca=None):
         X = pca.transform(X,y)
 
     print(len(y))
-
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    #
+    # from sklearn.model_selection import train_test_split
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     # Building and training the model
-    classifier = select_model("SQLi", X_train, y_train)
+    classifier = select_model("XSS", X, y)
 
-    print("y test",np.count_nonzero(y_test))
+    print("y test",np.count_nonzero(y))
     # Predicting the Test set results
-    y_pred = classifier.predict(X_test)
+    y_pred = classifier.predict(X)
     # print(y_pred, y_test[4])
 
     # # Making the Confusion Matrix
     from sklearn.metrics import confusion_matrix
-    cm = confusion_matrix(y_test, y_pred)
+    cm = confusion_matrix(y, y_pred)
     print(cm)
 
     # Generating accuracy, precision, recall and f1-score
     from sklearn.metrics import classification_report
-    target_names = ['Safe', 'SQLi']
-    print(classification_report(y_test, y_pred, target_names=target_names))
+    target_names = ['Safe', 'XSS']
+    print(classification_report(y, y_pred, target_names=target_names))
 
     return classifier
 
@@ -178,38 +179,41 @@ def main():
     init("config.ini")
     # cmd_create_set()
     # cmd_create_CPG('tuning_set', 'PHP', 'XSS')
-    print_banner("Mine Safe")
-    patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
-    print(len(patterns))
-    print_banner("Mine Unsafe")
-    patterns = patterns + cmd_mine_frequent_pattern(0.5, 0.5, "SQLi")
-    print(len(patterns))
-    print_banner("Mine Other")
-    patterns = patterns + cmd_mine_frequent_pattern(1, 1, "SQLi", 2)
-    print(len(patterns))
-    # print_banner("Result patterns")
-    write_patterns_to_file(patterns)
+    # print_banner("Mine Safe")
+    # patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_XSS")
+    # print(len(patterns))
+    # print_banner("Mine Unsafe")
+    # patterns = patterns + cmd_mine_frequent_pattern(0.6, 0.5, "XSS")
+    # print(len(patterns))
+    # print_banner("Mine Other")
+    # patterns = patterns + cmd_mine_frequent_pattern(0.8, 0.2, "XSS", 2)
+    # print(len(patterns))
+    # # print_banner("Result patterns")
+    # write_patterns_to_file(patterns)
 
 
     # generate_features_from_code(patterns)
     # print(patterns)
     # pt = cmd_read_patterns_from_file()
-    # # #
-    # create_features_file(pt, CSVGraph.getCPGs(), "SQLi")
+    # # # #
+    # create_features_file(pt, CSVGraph.getCPGsByType("XSS", "testing_set") , "XSS")
+    # create_features_file(pt, CSVGraph.getCPGsByType("Safe_XSS", "testing_set"), "XSS")
+    # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "tuning_set"), "XSS")
+    # create_features_file(pt, CSVGraph.getCPGsByType("SQLi", "tuning_set"), "XSS")
 
-    # dataset_file = get_str("processed_files", "FeaturesFile")
-    # dataset = pd.read_csv(dataset_file, header=None)
-    #
-    # X = dataset.iloc[:, :-1].values
-    # y = dataset.iloc[:, -1].values
-    #
-    # pca = BatchedPCA(30)
-    # pca.partial_fit(X,y)
-    #
-    # print("vuln", np.count_nonzero(y))
-    #
-    # model = cmd_train_model(pca)
-    # cmd_save_model("SQLi", "RDF", model)
+    dataset_file = get_str("processed_files", "FeaturesFile")
+    dataset = pd.read_csv(dataset_file, header=None)
+
+    X = dataset.iloc[:, :-1].values
+    y = dataset.iloc[:, -1].values
+
+    pca = BatchedPCA(30)
+    pca.partial_fit(X,y)
+
+    print("vuln", np.count_nonzero(y))
+
+    model = cmd_train_model(pca)
+    cmd_save_model("XSS", "RDF", model)
     # generate_features_from_code(pt)
     # print(pt)
     # if pt:
