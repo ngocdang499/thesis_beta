@@ -1,7 +1,7 @@
 data/
 tools/ast-img-gen/
 # Joern CSV file
-*.csv
+
 
 # Environment and log file
 *.env
