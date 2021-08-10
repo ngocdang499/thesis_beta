@@ -80,14 +80,16 @@ class CSVEdge(Base):
     id = Column(Integer, primary_key=True)
     in_vertex = Column(Integer)
     out_vertex = Column(Integer)
-    labels = Column(String)
+    type = Column(String)
+    var = Column(String)
     cpg_id = Column(Integer)
 
-    def __init__(self, in_vertex, out_vertex, labels, cpg_id):
+    def __init__(self, in_vertex, out_vertex, type, cpg_id, var=""):
         self.in_vertex = in_vertex
         self.out_vertex = out_vertex
         self.cpg_id = cpg_id
-        self.labels = labels
+        self.type = type
+        self.var = var
 
     @staticmethod
     def getEdgesFromCSV(filepath, cpg_id):
@@ -101,7 +103,7 @@ class CSVEdge(Base):
                 else:
                     edge = CSVEdge(row[0], row[1], row[2], cpg_id)
                     if len(row) > 3:
-                        edge = CSVEdge(row[0], row[1], ':'.join([row[2], row[3]]), cpg_id)
+                        edge = CSVEdge(row[0], row[1], row[2], cpg_id, row[3])
                     edge_lst.append(edge)
                     line_count += 1
         return edge_lst
@@ -129,13 +131,31 @@ class CSVNode(Base):
     cpg_id = Column(Integer)
     # labels = Column(JSON)
     labels = Column(String)
+    type = Column(String)
+    flags = Column(String)
+    lineno = Column(String)
+    code = Column(String)
+    childnum = Column(String)
+    funcid = Column(String)
+    classname = Column(String)
+    name = Column(String)
+
     is_vuln = Column(Boolean)
 
-    def __init__(self, node_id, cpg_id, labels, is_vuln):
+    def __init__(self, node_id, cpg_id, labels, type, flags, lineno, code, childnum, funcid, classname, name, is_vuln):
         self.node_id = node_id
         self.cpg_id = cpg_id
         # self.labels = json.dumps(labels)
         self.labels = labels
+        self.type = type
+        self.flags = flags
+        self.lineno = lineno
+        self.code = code
+        self.childnum = childnum
+        self.funcid = funcid
+        self.classname = classname
+        self.name = name
+
         self.is_vuln = is_vuln
 
     @staticmethod
@@ -155,7 +175,8 @@ class CSVNode(Base):
 
                     if labels.lineno and labels.lineno in vuln_lines:
                         is_vuln = True
-                    node = CSVNode(row[0], cpg_id, ':'.join([labels.label, labels.nodetype, labels.code]), is_vuln)
+                    node = CSVNode(row[0], cpg_id, row[1], row[2], row[3], row[4], row[5], row[6],
+                                    row[7], row[8], row[11], is_vuln)
                     node_lst.append(node)
                     line_count += 1
         return node_lst

@@ -134,12 +134,10 @@ def write_patterns_to_file(patterns_set, vuln_type):
 def cmd_read_patterns_from_file(vuln_type):
     patterns_file = get_str("processed_files", f'{vuln_type}PatternsFile')
     if os.path.isfile(patterns_file):
-        print("AAAAAAAAAAAAA\n")
         patterns_set = []
         with open(patterns_file, 'r') as f:
             lines = f.readlines()
             for l in lines:
-                print(l)
                 patterns_set.append(json.loads(l))
         return patterns_set
     else:
@@ -151,10 +149,12 @@ def cmd_train_model(vuln_type, model_type, X_train, y_train, pca=None):
     print_banner(f'Train classifier model')
 
     if 0 < pca < len(y_train):
-        pca = BatchedPCA(30)
+
+        pca = BatchedPCA(pca)
         pca.partial_fit(X_train,y_train)
         # # #
         X_train = pca.transform(X_train)
+        print(np.shape(X_train))
 
     # Building and training the model
     classifier = select_model(vuln_type, model_type, X_train, y_train)
@@ -166,7 +166,7 @@ def cmd_test_model(vuln_type, model_name, model, X_test, y_test, pca):
     print_banner(f'Test classifier model')
 
     if 0 < pca < len(y_test):
-        pca = BatchedPCA(30)
+        pca = BatchedPCA(pca)
         pca.partial_fit(X_test,y_test)
         # # #
         X_test = pca.transform(X_test)
@@ -218,14 +218,15 @@ def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
     dataset_file = get_str("processed_files", f'{vuln_type}FeaturesFile')
     dataset = pd.read_csv(dataset_file, header=None)
 
-    print(dataset)
     X = dataset.iloc[:, :-1].values
     y = dataset.iloc[:, -1].values
 
-    pca = BatchedPCA(30)
+    pca = BatchedPCA(60)
     pca.partial_fit(X, y)
 
     feature_vector = np.array(cmd_generate_feature_vector(filepath, vuln_type))
+
+    # print("BBB", feature_vector, len(feature_vector))
 
     feature_vector = [feature_vector]
 
@@ -233,12 +234,13 @@ def cmd_predict_file(filepath, vuln_type, model_name, display_ast=False):
     classifier = cmd_load_model(vuln_type, model_name)
 
     res = classifier.predict(feature_vector)
+    print(res)
     return res
 
 
 def main():
     init("config.ini")
-    # cmd_create_set('SAMATE')
+    cmd_create_set('SAMATE')
     # cmd_create_CPG('training_set', 'PHP', 'XSS')
     # cmd_create_CPG('training_set', 'PHP', 'SQLi')
     #
@@ -249,94 +251,99 @@ def main():
     # cmd_create_CPG('tuning_set', 'PHP', 'SQLi')
 
 #     print_banner("Mine Safe")
-#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_XSS")
+#     patterns = cmd_mine_frequent_pattern(0.6, 0.6, "Safe_XSS")
 #     print(len(patterns))
-# #     # write_patterns_to_file(patterns)
+# # #     # write_patterns_to_file(patterns)
+# # # # #
+#     print_banner("Mine Unsafe")
+#     patterns = cmd_mine_frequent_pattern(0.6, 0.6, "XSS")
+# #     print(len(patterns))
+# # # #     write_patterns_to_file(patterns)
 # # # #
+# # #     # print_banner("Mine Other")
+#     patterns = cmd_mine_frequent_pattern(0.9, 0.4, "XSS", 2)
+# #     print(len(patterns))
+# # #     print_banner("Result patterns")
+#     patterns_set = Pattern.getPatterns("XSS")
+#     write_patterns_to_file(patterns_set, "XSS")
+# # #
+# # #
+# # #     # generate_features_from_code(patterns)
+# # #     # print(patterns)
+#     pt = cmd_read_patterns_from_file('XSS')
+# # #     print(pt)
+# # # #     # # # # # #
+# # # # #     # # # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "training_set"), "SQLi")
+#     create_features_file(pt, CSVGraph.getCPGsByType("XSS", "testing_set") + CSVGraph.getCPGsByType("Safe_XSS", "testing_set") + CSVGraph.getCPGsByType("SQLi", "tuning_set") + CSVGraph.getCPGsByType("Safe_SQLi", "tuning_set"), "XSS")
+# #
+#
+#     print_banner("Mine Safe")
+#     patterns = cmd_mine_frequent_pattern(0.3, 0.3, "Safe_XSS")
+# #     print(len(patterns))
+# # #     # write_patterns_to_file(patterns)
+# # # # #
 # #     print_banner("Mine Unsafe")
-#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "XSS")
+#     patterns = cmd_mine_frequent_pattern(0.3, 0.3, "XSS")
 #     print(len(patterns))
 # # #     write_patterns_to_file(patterns)
 # # #
-# #     # print_banner("Mine Other")
+#     # print_banner("Mine Other")
 #     patterns = cmd_mine_frequent_pattern(0.8, 0.2, "XSS", 2)
-#     print(len(patterns))
-# #     print_banner("Result patterns")
+# #     print(len(patterns))
+# # #     print_banner("Result patterns")
 #     patterns_set = Pattern.getPatterns("XSS")
 #     write_patterns_to_file(patterns_set, "XSS")
-# #
-# #
-# #     # generate_features_from_code(patterns)
-# #     # print(patterns)
+#
 #     pt = cmd_read_patterns_from_file('XSS')
 # #     print(pt)
 # # #     # # # # # #
 # # # #     # # # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "training_set"), "SQLi")
-#     create_features_file(pt, CSVGraph.getCPGsByType("XSS", "training_set") + CSVGraph.getCPGsByType("Safe_XSS", "training_set") + CSVGraph.getCPGsByType("SQLi", "tuning_set"), "XSS")
-# #
-#
-#     print_banner("Mine Safe")
-#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "Safe_SQLi")
-#     print(len(patterns))
-# #     # write_patterns_to_file(patterns)
-# # # #
-# #     print_banner("Mine Unsafe")
-#     patterns = cmd_mine_frequent_pattern(0.5, 0.5, "SQLi")
-#     print(len(patterns))
-# # #     write_patterns_to_file(patterns)
-# # #
-# #     # print_banner("Mine Other")
-#     patterns = cmd_mine_frequent_pattern(0.8, 0.2, "SQLi", 2)
-#     print(len(patterns))
-# #     print_banner("Result patterns")
-#     patterns_set = Pattern.getPatterns("SQLi")
-#     write_patterns_to_file(patterns_set, "SQLi")
-#
-#     pt = cmd_read_patterns_from_file('SQLi')
-# #     print(pt)
-# # #     # # # # # #
-# # # #     # # # create_features_file(pt, CSVGraph.getCPGsByType("Safe_SQLi", "training_set"), "SQLi")
-#     create_features_file(pt, CSVGraph.getCPGsByType("SQLi", "training_set") + CSVGraph.getCPGsByType("Safe_SQLi", "training_set") + CSVGraph.getCPGsByType("XSS", "tuning_set"), "SQLi")
+#     create_features_file(pt, CSVGraph.getCPGsByType("XSS", "testing_set") + CSVGraph.getCPGsByType("Safe_XSS", "testing_set") + random.sample(CSVGraph.getCPGsByType("SQLi", "testing_set") + CSVGraph.getCPGsByType("Safe_SQLi", "testing_set"),200), "XSS")
+#     pt = cmd_read_patterns_from_file('XSS')
+#     create_features_file(pt, random.sample(CSVGraph.getCPGsByType("Safe_XSS", "tuning_set"), 130), "SQLi")
 
-
-    dataset_file = get_str("processed_files", "XSSFeaturesFile")
-    dataset = pd.read_csv(dataset_file, header=None)
-    # dataset = random.shuffle(dataset)
-    dataset = dataset.sample(frac=1).reset_index(drop=True)
-    print(dataset)
-    # #
-    X = dataset.iloc[:, :-1].values
-    y = dataset.iloc[:, -1].values
-#     # #
-    pca = BatchedPCA(30)
-    pca.partial_fit(X,y)
-#     # # # #
-    print("vuln", np.count_nonzero(y))
-
-    model = cmd_train_model("XSS", "SVM", X, y, 0)
-    cmd_test_model("XSS", "SVM", model, X, y, 0)
-#     # import src.classification_model.metrics
-#     #
-    cmd_save_model("XSS", "SVM", model)
-#     # generate_features_from_code(pt)
-#     # print(pt)
-#     # if pt:
-#     #     print("here")
-#     #     create_features_file(pt)
-#     # cmd_gen_ast_img("data/SAMATE/Injection/CWE_89/safe/CWE_89__array-GET__CAST-cast_float__multiple_AS-concatenation.php")
-#     # import_graph_to_neo4j("test.php")
-#
 #     dataset_file = get_str("processed_files", "XSSFeaturesFile")
 #     dataset = pd.read_csv(dataset_file, header=None)
-#     # # #
+# # #     # dataset = random.shuffle(dataset)
+# # #     dataset = dataset.sample(frac=1).reset_index(drop=True)
+# # #     print(dataset)
+# # #     # #
 #     X = dataset.iloc[:, :-1].values
 #     y = dataset.iloc[:, -1].values
+# #     # #
+# #     pca = BatchedPCA(50)
+# #     pca.partial_fit(X,y)
+# #     # # # #
+#     print("vuln", np.count_nonzero(y))
+#
+#     model = cmd_train_model("XSS", "RDF", X, y, 60)
+# #
+# # # # #     # import src.classification_model.metrics
+# # # # #     #
+#     cmd_save_model("XSS", "RDF", model)
+#     cmd_test_model("XSS", "RDF", model, X, y, 60)
+#     # cmd_test_model("XSS", "DT", model, X, y, 70)
+# #     # generate_features_from_code(pt)
+# #     # print(pt)
+# #     # if pt:
+# #     #     print("here")
+# #     #     create_features_file(pt)
+# #     # cmd_gen_ast_img("data/SAMATE/Injection/CWE_89/safe/CWE_89__array-GET__CAST-cast_float__multiple_AS-concatenation.php")
+# #     # import_graph_to_neo4j("test.php")
+# #
+    dataset_file = get_str("processed_files", "XSSFeaturesFile")
+    dataset = pd.read_csv(dataset_file, header=None)
 #     # # #
-#     pca = BatchedPCA(30)
-#     pca.partial_fit(X,y)
-#     # # #
-#     X = pca.transform(X)
-#     model = cmd_load_model("XSS", "RDF")
+    X = dataset.iloc[:, :-1].values
+    y = dataset.iloc[:, -1].values
+# #     # # #
+# #     pca = BatchedPCA(30)
+# #     pca.partial_fit(X,y)
+# #     # # #
+# #     X = pca.transform(X)
+    model = cmd_train_model("XSS", "SVM", X, y, 60)
+    cmd_save_model("XSS", "SVM", model)
+    cmd_test_model("XSS", "SVM", model, X, y, 60)
 #     # # #
 #     y_pred = model.predict(X)
 #     print(len(y_pred))
@@ -374,11 +381,11 @@ def main():
     #     "data/SAMATE/Injection/CWE_89/unsafe/CWE_89__array-GET__no_sanitizing__select_from_where-sprintf_%s_simple_quote.php",
     #     "SQLi",
     #     "SVM")
-    # cmd_predict_file("data/SAMATE/XSS/CWE_79/safe/CWE_79__array-GET__CAST-cast_float_sort_of__Use_untrusted_data_script-side_Quoted_Expr.php","SQLi","RDF")
-    # cmd_predict_file(
+    # cmd_predict_file("/home/mn404/Documents/Project/data/SAMATE/XSS/CWE_79/safe/CWE_79__array-GET__CAST-cast_float__Use_untrusted_data-body.php","XSS","RDF")
+    # res = cmd_predict_file(
     #     "data/SAMATE/XSS/CWE_79/unsafe/CWE_79__array-GET__func_addslashes__Use_untrusted_data_attribute-unquoted_Attr.php",
-    #     "SQLi", "RDF")
-
+    #     "XSS", "DT")
+    # print(res)
 
 if __name__ == "__main__":
     main()

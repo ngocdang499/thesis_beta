@@ -259,10 +259,10 @@ class gSpan(object):
         if self._mine_type == 2:
             vuln_graph_lst = safe_graph_lst + vuln_graph_lst
             if self._target == 'XSS':
-                safe_graph_lst = CSVGraph.getCPGsBySet('SQLi', 'tuning_set')
+                safe_graph_lst = CSVGraph.getCPGsBySet('SQLi', 'tuning_set') + CSVGraph.getCPGsBySet('Safe_SQLi', 'tuning_set')
                 vuln_graph_lst = random.sample(vuln_graph_lst, len(safe_graph_lst))
             else:
-                safe_graph_lst = CSVGraph.getCPGsBySet('XSS', 'tuning_set')
+                safe_graph_lst = CSVGraph.getCPGsBySet('XSS', 'tuning_set') + CSVGraph.getCPGsBySet('Safe_XSS', 'tuning_set')
                 # safe_graph_lst = random.sample(safe_graph_lst, len(vuln_graph_lst))
 
         print(len(vuln_graph_lst), len(safe_graph_lst))
@@ -290,14 +290,14 @@ class gSpan(object):
             vertices = CSVNode.getNodes(gid)
             for vt in vertices:
                 # Mine for patterns only appear in vulnerable source code
-                if self._mine_type == 1 and "Safe_" not in self._target:
-                    vt.labels = vt.labels + ":" + str(vt.is_vuln)
-                tgraph.add_vertex(vt.node_id, vt.labels)
+                # if self._mine_type == 1 and "Safe_" not in self._target:
+                labels = ":".join([vt.labels, vt.type, vt.code])
+                tgraph.add_vertex(vt.node_id, labels)
             # Add edges to graph
             edges = CSVEdge.getEdges(gid)
 
             for e in edges:
-                tgraph.add_edge(AUTO_EDGE_ID, e.out_vertex, e.in_vertex, e.labels)
+                tgraph.add_edge(AUTO_EDGE_ID, e.out_vertex, e.in_vertex, ":".join([e.type, e.var]))
 
             self.graphs[gid] = tgraph
         return self

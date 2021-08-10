@@ -17,13 +17,13 @@ from src.utils.config import *
 from src.utils.logs import print_notice, print_error
 
 
-hyperparameters = {'DecisionTreeClassifier':
+hyperparameters = {'DT':
                        {'max_depth': [5, 15, 30, None],
                         'min_samples_leaf': [1, 2, 10, 50, 100],
                         'max_features': ['log2', 'sqrt', None],
                         'n_jobs': [-1],
                         'class_weight': ['balanced']},
-                   'RandomForestClassifier':
+                   'RDF':
                        {'n_estimators': [300, 500],
                         'max_depth': [5, 15, 30, None],
                         'min_samples_leaf': [1, 2, 10],
@@ -33,8 +33,8 @@ hyperparameters = {'DecisionTreeClassifier':
                         },
                    'SVM':
                        {'C': [0.01, 0.1, 1, 10, 100],
-                        'gamma': [0.0005, 0.05, 0.5, 5, 50, 500, 'auto'],
-                        'kernel': ['poly'],
+                        'gamma': [0.0001, 0.01, 0.1, 1, 10, 100, 'auto'],
+                        'kernel': ['rbf'],
                         'probability': [True],
                         'shrinking': [False],
                         'class_weight': ['balanced']
@@ -56,11 +56,11 @@ def create_model(model_type, params):
         for parameter, value in params.items():
             setattr(model, parameter, value)
 
-    if model_type == "SVM":
-        n_estimators = 10
-
-        # Because SVM is so slow, we use a bagging classifier to speed things up
-        model = BaggingClassifier(model, max_samples=1.0 / n_estimators, n_estimators=n_estimators, n_jobs=4)
+    # if model_type == "SVM":
+    #     n_estimators = 10
+    #
+    #     # Because SVM is so slow, we use a bagging classifier to speed things up
+    #     model = BaggingClassifier(model, max_samples=1.0 / n_estimators, n_estimators=n_estimators, n_jobs=4)
 
     return model
 
@@ -74,8 +74,8 @@ def select_model(vuln_type, model_type, X, Y):
     if model_type == "DT" and get_boolean('model', 'GenerateDecisionTreeGraph'):
         create_dt_graph("%s_%s" % (vuln_type), model, X.columns.values)
 
-    # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
-    # select_best_model(X_train, y_train, X_test, y_test)
+    # X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.1, random_state=0)
+    # select_best_model(X_train, y_train, X_test, y_test, model_type)
     return model
 
 

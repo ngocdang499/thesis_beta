@@ -33,7 +33,6 @@ def session_factory():
 
 
     # params = config()
-    print("here")
     # use session_factory() to get a new Session
     _SessionFactory = sessionmaker(bind=engine)
 
